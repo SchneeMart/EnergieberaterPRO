@@ -1,20 +1,34 @@
 # Vollständiger Anforderungskatalog
 
-## Version 2.0 - November 2025
+## Version 2.1 - November 2025
 
 ---
 
 ## 1. Projektvision
 
 ### 1.1 Mission
-EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte Webanwendung** für professionelle Energieberatung, die:
-- Alle Berechnungen nach deutschen und europäischen Normen durchführt
+EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Webanwendung** für professionelle Energieberatung in **Deutschland und Österreich**, die:
+- Alle Berechnungen nach deutschen (DIN), österreichischen (ÖNORM) und europäischen Normen durchführt
 - Maximale Automatisierung bei minimaler Bürokratie bietet
 - Als vollständig portable, selbst-gehostete Lösung funktioniert
 - Höchste Sicherheitsstandards erfüllt
 - Vollständig Open Source ist
 
-### 1.2 Kernwerte
+### 1.2 Benutzer-Hierarchie (SaaS-Modell)
+
+**Referenz:** Siehe `03_FRONTEND/TERMINOLOGIE_KORREKTUR.md` für Details.
+
+| Ebene | Rolle | Beschreibung | Login |
+|-------|-------|--------------|-------|
+| 1 | **Sysadmin** | Websitebetreiber/Plattform-Operator | ✓ |
+| 2 | **Organisation** | Kunden des Sysadmins (Energieberatungsbüros) | ✓ |
+| 2a | Org-Admin | Verwaltet Organisation | ✓ |
+| 2b | Mitarbeiter | Arbeitet an Projekten | ✓ |
+| 3 | **Endkunde** | Kunden der Organisation (Hausbesitzer, Firmen) | ✗ KEIN LOGIN |
+
+⚠️ **WICHTIG:** Endkunden haben keinen Login auf der Plattform! Sie werden als Datensatz in Projekten erfasst.
+
+### 1.3 Kernwerte
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           KERNWERTE                                         │
@@ -120,20 +134,38 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte Webanwend
 | GEB-005 | Foto- und Plandokumentation | HOCH |
 | GEB-006 | 3D-Gebäudemodell (Import/Export) | NIEDRIG |
 
-#### 2.3.2 Berechnungsmodule
+#### 2.3.2 Berechnungsmodule - Deutschland (DE)
+| ID | Anforderung | Norm | Priorität |
+|----|-------------|------|-----------|
+| CALC-DE-001 | U-Wert-Berechnung | DIN EN ISO 6946 | KRITISCH |
+| CALC-DE-002 | Heizlastberechnung | DIN EN 12831 | KRITISCH |
+| CALC-DE-003 | Kühllastberechnung | VDI 2078 | HOCH |
+| CALC-DE-004 | Energiebilanz | DIN V 18599 | KRITISCH |
+| CALC-DE-005 | Primärenergieberechnung | GEG 2024 | KRITISCH |
+| CALC-DE-006 | Energieausweis Wohngebäude | GEG 2024 | KRITISCH |
+| CALC-DE-007 | Energieausweis Nichtwohngebäude | GEG 2024 | KRITISCH |
+| CALC-DE-008 | iSFP (Sanierungsfahrplan) | BAFA | HOCH |
+
+#### 2.3.3 Berechnungsmodule - Österreich (AT)
+| ID | Anforderung | Norm | Priorität |
+|----|-------------|------|-----------|
+| CALC-AT-001 | U-Wert-Berechnung | ÖNORM B 8110-6 | KRITISCH |
+| CALC-AT-002 | Heizwärmebedarf | ÖNORM B 8110-6 | KRITISCH |
+| CALC-AT-003 | Kühlbedarf | ÖNORM B 8110-6 | HOCH |
+| CALC-AT-004 | Energieausweis Wohngebäude | ÖNORM H 5055 | KRITISCH |
+| CALC-AT-005 | Energieausweis Nichtwohngebäude | ÖNORM H 5056 | KRITISCH |
+| CALC-AT-006 | Primärenergiebedarf | OIB-RL 6 | KRITISCH |
+| CALC-AT-007 | CO2-Emissionen | ÖNORM H 5050 | HOCH |
+
+#### 2.3.4 Berechnungsmodule - Länderneutral (DE & AT)
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
-| CALC-001 | U-Wert-Berechnung (DIN EN ISO 6946) | KRITISCH |
-| CALC-002 | Heizlastberechnung (DIN EN 12831) | KRITISCH |
-| CALC-003 | Kühllastberechnung (VDI 2078) | HOCH |
-| CALC-004 | Energiebilanz (DIN V 18599) | KRITISCH |
-| CALC-005 | Primärenergieberechnung | KRITISCH |
-| CALC-006 | CO2-Bilanzierung (GHG Protocol) | HOCH |
-| CALC-007 | Wirtschaftlichkeitsberechnung | HOCH |
-| CALC-008 | Erneuerbare-Energien-Berechnung | HOCH |
-| CALC-009 | Lebenszyklusanalyse (LCA) | MITTEL |
+| CALC-001 | CO2-Bilanzierung (GHG Protocol) | HOCH |
+| CALC-002 | Wirtschaftlichkeitsberechnung | HOCH |
+| CALC-003 | Erneuerbare-Energien-Berechnung | HOCH |
+| CALC-004 | Lebenszyklusanalyse (LCA) | MITTEL |
 
-#### 2.3.3 Validierung
+#### 2.3.5 Validierung
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
 | VAL-001 | Automatische Plausibilitätsprüfung | KRITISCH |
@@ -176,13 +208,17 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte Webanwend
 
 ### 2.5 Geschäftsprozesse
 
-#### 2.5.1 Kundenverwaltung
+#### 2.5.1 Endkunden-Verwaltung (Kunden der Organisation)
+
+**Hinweis:** "Kunden" in diesem Kontext = Endkunden der Organisation (Hausbesitzer, Firmen), NICHT Kunden der Plattform.
+
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
-| CRM-001 | Kundentypen (Privat, Geschäft, Öffentlich) | HOCH |
-| CRM-002 | Kundenhistorie und Projekte | HOCH |
+| CRM-001 | Endkundentypen (Privat, Geschäft, Öffentlich, WEG) | HOCH |
+| CRM-002 | Endkunden-Historie und Projekte | HOCH |
 | CRM-003 | Kontaktverlauf | MITTEL |
 | CRM-004 | DSGVO-konforme Datenverwaltung | KRITISCH |
+| CRM-005 | Endkunden haben KEINEN Login | KRITISCH |
 
 #### 2.5.2 Angebotswesen
 | ID | Anforderung | Priorität |
@@ -477,4 +513,4 @@ Enterprise:
 ---
 
 *Letzte Aktualisierung: 2025-11-25*
-*Version: 2.0.0*
+*Version: 2.1.0*

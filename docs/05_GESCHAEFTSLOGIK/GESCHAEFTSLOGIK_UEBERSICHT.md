@@ -1,5 +1,18 @@
 # Geschäftslogik-Module
 
+## Terminologie-Hinweis
+
+**⚠️ WICHTIG:** In diesem Dokument bezieht sich "Kunde" immer auf **Endkunden** (Kunden der Organisation), NICHT auf Organisationen (Kunden der Plattform).
+
+| Begriff | Bedeutung | Login |
+|---------|-----------|-------|
+| **Organisation** | Kunde der Plattform (Energieberatungsbüro) | ✓ |
+| **Endkunde** | Kunde der Organisation (Hausbesitzer, Firmen) | ✗ KEIN LOGIN |
+
+**Referenz:** `03_FRONTEND/TERMINOLOGIE_KORREKTUR.md`
+
+---
+
 ## 1. Übersicht
 
 ### 1.1 Geschäftsprozesse
@@ -29,9 +42,12 @@
 
 ---
 
-## 2. Kundenverwaltung (CRM)
+## 2. Endkunden-Verwaltung (CRM)
 
-### 2.1 Kundentypen
+Diese Funktionen verwalten die **Endkunden der Organisation** (Hausbesitzer, Firmen, WEGs).
+Endkunden haben **KEINEN Login** auf der Plattform - sie werden als Datensätze erfasst.
+
+### 2.1 Endkundentypen
 
 ```python
 class CustomerType(Enum):
@@ -56,11 +72,11 @@ CUSTOMER_FIELDS = {
 }
 ```
 
-### 2.2 Kundenlebenszyklus
+### 2.2 Endkunden-Lebenszyklus
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                      KUNDENLEBENSZYKLUS                                │
+│                    ENDKUNDEN-LEBENSZYKLUS                              │
 ├────────────────────────────────────────────────────────────────────────┤
 │                                                                        │
 │   LEAD ─────▶ INTERESSENT ─────▶ KUNDE ─────▶ STAMMKUNDE              │
@@ -78,7 +94,7 @@ CUSTOMER_FIELDS = {
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.3 Kundenservice Funktionen
+### 2.3 Endkunden-Service Funktionen
 
 ```python
 # services/customer_service.py
@@ -858,4 +874,4 @@ async def calculate_business_kpis(
 ---
 
 *Letzte Aktualisierung: 2025-11-25*
-*Version: 0.1.0*
+*Version: 1.0.0*

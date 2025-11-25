@@ -1,5 +1,17 @@
 # Datenmodell - Vollständige Spezifikation
 
+## Terminologie-Hinweis
+
+**⚠️ WICHTIG:**
+- **Organisationen** = Kunden der Plattform (Energieberatungsbüros) → HABEN LOGIN
+- **Customers (Endkunden)** = Kunden der Organisationen (Hausbesitzer, Firmen) → KEIN LOGIN
+
+**Referenzen:**
+- `03_FRONTEND/TERMINOLOGIE_KORREKTUR.md` - Detaillierte Terminologie
+- `04_BERECHNUNGEN/DATENMODELL_GEBAEUDE.md` - Detailliertes Gebäude-Schema mit Versionierung
+
+---
+
 ## 1. Übersicht
 
 ### 1.1 Entity-Relationship-Diagramm (Konzept)
@@ -93,7 +105,7 @@
 
 ### 2.1 Benutzerverwaltung
 
-#### organizations
+#### organizations (Kunden der Plattform - HABEN LOGIN)
 ```sql
 CREATE TABLE organizations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -103,6 +115,12 @@ CREATE TABLE organizations (
     address JSONB,
     contact JSONB,
     settings JSONB DEFAULT '{}',
+
+    -- Länderunterstützung (DE/AT)
+    country VARCHAR(2) DEFAULT 'DE' CHECK (country IN ('DE', 'AT')),
+    -- DE = Deutschland (DIN, GEG)
+    -- AT = Österreich (ÖNORM, OIB)
+
     subscription_plan VARCHAR(50) DEFAULT 'free',
     subscription_valid_until TIMESTAMP WITH TIME ZONE,
     is_active BOOLEAN DEFAULT TRUE,
@@ -113,6 +131,7 @@ CREATE TABLE organizations (
 -- Indizes
 CREATE INDEX idx_organizations_slug ON organizations(slug);
 CREATE INDEX idx_organizations_active ON organizations(is_active);
+CREATE INDEX idx_organizations_country ON organizations(country);
 ```
 
 #### users
@@ -202,13 +221,21 @@ CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 
 ### 2.2 Projektverwaltung
 
-#### customers
+#### customers (Endkunden der Organisationen - ⚠️ KEIN LOGIN!)
+
+**WICHTIG:** Diese Tabelle enthält die Endkunden der Organisationen (Hausbesitzer, Firmen, WEGs).
+Endkunden haben **KEINEN Login** auf der Plattform - sie werden nur als Datensätze erfasst.
+
 ```sql
 CREATE TABLE customers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
     customer_number VARCHAR(50),
-    customer_type VARCHAR(20) CHECK (customer_type IN ('private', 'business', 'public')),
+    customer_type VARCHAR(20) CHECK (customer_type IN ('private', 'business', 'public', 'weg')),
+    -- private = Privatkunde (Hausbesitzer)
+    -- business = Geschäftskunde (Firma)
+    -- public = Öffentliche Hand
+    -- weg = Wohnungseigentümergemeinschaft
 
     -- Privatkunden
     salutation VARCHAR(20),
@@ -368,6 +395,10 @@ CREATE INDEX idx_locations_postal ON locations(postal_code);
 ### 2.3 Gebäudedaten
 
 #### buildings
+
+**Hinweis:** Für detailliertes Schema mit Gebäude-Versionierung (Ist-Zustand, Sanierungsvarianten)
+siehe `04_BERECHNUNGEN/DATENMODELL_GEBAEUDE.md`.
+
 ```sql
 CREATE TABLE buildings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1323,4 +1354,4 @@ $$ LANGUAGE plpgsql;
 ---
 
 *Letzte Aktualisierung: 2025-11-25*
-*Version: 0.1.0*
+*Version: 1.0.0*

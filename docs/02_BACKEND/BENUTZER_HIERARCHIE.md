@@ -3,6 +3,29 @@
 ## Referenzen
 - [RBAC Best Practices](https://csrc.nist.gov/projects/role-based-access-control)
 - [Multi-Tenant Authorization](https://auth0.com/docs/architecture-scenarios/multiple-tenants)
+- **Interne Referenz:** `03_FRONTEND/TERMINOLOGIE_KORREKTUR.md` für UI-Terminologie
+
+---
+
+## Wichtige Klarstellung
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│  ⚠️  WICHTIG: ENDKUNDEN HABEN KEINEN LOGIN!                                │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                            │
+│  Die Plattform hat DREI Ebenen, aber nur ZWEI davon haben Login-Zugang:   │
+│                                                                            │
+│  ✓ SYSADMIN          → Login (Websitebetreiber/Plattform-Operator)        │
+│  ✓ ORG-ADMIN         → Login (verwaltet Organisation)                      │
+│  ✓ MITARBEITER       → Login (arbeitet an Projekten)                       │
+│  ✗ ENDKUNDE          → KEIN LOGIN (wird als Datensatz erfasst)            │
+│                                                                            │
+│  Endkunden sind die Kunden der Organisationen (Hausbesitzer, Firmen),     │
+│  nicht die Kunden der Plattform selbst!                                   │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
