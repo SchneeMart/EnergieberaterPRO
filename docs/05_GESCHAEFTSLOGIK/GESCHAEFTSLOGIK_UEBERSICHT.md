@@ -873,5 +873,522 @@ async def calculate_business_kpis(
 
 ---
 
-*Letzte Aktualisierung: 2025-11-25*
-*Version: 1.0.0*
+## 10. Externe Integrationen
+
+### 10.1 Buchhaltungs-Integration
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    BUCHHALTUNGS-INTEGRATIONEN                                    │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  DEUTSCHLAND                                 ÖSTERREICH                          │
+│  ══════════                                  ══════════                          │
+│  ┌─────────────┐  ┌─────────────┐           ┌─────────────┐                    │
+│  │   DATEV     │  │  Lexoffice  │           │    BMD      │                    │
+│  │   Export    │  │     API     │           │   Export    │                    │
+│  └─────────────┘  └─────────────┘           └─────────────┘                    │
+│        │               │                          │                             │
+│        │               │                          │                             │
+│        ▼               ▼                          ▼                             │
+│  ┌───────────────────────────────────────────────────────────────────────┐     │
+│  │                    EnergieberaterPRO                                   │     │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │     │
+│  │  │  Rechnungen │  │  Zahlungen  │  │   Konten    │  │   Export    │  │     │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │     │
+│  └───────────────────────────────────────────────────────────────────────┘     │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### DATEV-Export
+
+```python
+# services/integrations/datev.py
+class DatevExporter:
+    """
+    Exportiert Buchungssätze im DATEV-Format
+    """
+
+    def __init__(self):
+        self.kontenrahmen = "SKR04"  # oder SKR03
+
+    async def export_invoices(
+        self,
+        organization_id: UUID,
+        period: tuple[date, date]
+    ) -> bytes:
+        """Exportiert Rechnungen als DATEV-CSV"""
+        invoices = await self.get_invoices(organization_id, period)
+
+        rows = []
+        for invoice in invoices:
+            rows.append({
+                'Belegdatum': invoice.date.strftime('%d%m'),
+                'Buchungstext': f"RE {invoice.invoice_number}",
+                'Umsatz': invoice.total,
+                'S/H': 'S',
+                'Konto': self._get_debitor_konto(invoice.customer),
+                'Gegenkonto': self._get_erloes_konto(invoice),
+                'Buchungsschlüssel': self._get_buchungsschluessel(invoice.tax_rate)
+            })
+
+        return self._to_csv(rows)
+
+    def _get_debitor_konto(self, customer) -> str:
+        """Debitorenkonto aus Kundennummer"""
+        return f"1{customer.customer_number.zfill(5)}"
+
+    def _get_erloes_konto(self, invoice) -> str:
+        """Erlöskonto nach Leistungsart"""
+        return {
+            'energy_consulting': '8400',
+            'energy_certificate': '8401',
+            'audit': '8402'
+        }.get(invoice.service_type, '8400')
+```
+
+#### Lexoffice API
+
+```python
+# services/integrations/lexoffice.py
+class LexofficeClient:
+    """
+    Integration mit Lexoffice Buchhaltung
+    """
+
+    BASE_URL = "https://api.lexoffice.io/v1"
+
+    async def sync_invoice(self, invoice: Invoice) -> str:
+        """Synchronisiert Rechnung zu Lexoffice"""
+        payload = {
+            "voucherDate": invoice.date.isoformat(),
+            "address": self._format_address(invoice.customer),
+            "lineItems": [
+                {
+                    "type": "custom",
+                    "name": item.description,
+                    "quantity": item.quantity,
+                    "unitPrice": {
+                        "currency": "EUR",
+                        "netAmount": float(item.net_amount),
+                        "taxRatePercentage": item.tax_rate
+                    }
+                }
+                for item in invoice.items
+            ],
+            "totalPrice": {
+                "currency": "EUR"
+            },
+            "taxConditions": {
+                "taxType": "net"
+            }
+        }
+
+        response = await self.client.post(
+            f"{self.BASE_URL}/invoices",
+            json=payload
+        )
+        return response.json()["id"]
+
+    async def sync_payment(
+        self,
+        lexoffice_invoice_id: str,
+        payment: Payment
+    ):
+        """Meldet Zahlungseingang"""
+        pass
+```
+
+### 10.2 Kalender-Integration
+
+```python
+# services/integrations/calendar.py
+from caldav import DAVClient
+
+class CalendarIntegration:
+    """
+    CalDAV-Integration für Terminplanung
+    """
+
+    async def sync_project_milestones(
+        self,
+        project: Project,
+        calendar_url: str
+    ):
+        """Synchronisiert Projekt-Meilensteine mit Kalender"""
+        client = DAVClient(url=calendar_url)
+        calendar = client.calendar(url=calendar_url)
+
+        for milestone in project.milestones:
+            event = self._create_event(milestone)
+            calendar.save_event(event)
+
+    async def create_appointment(
+        self,
+        project_id: UUID,
+        customer_id: UUID,
+        datetime_start: datetime,
+        duration_minutes: int,
+        title: str,
+        location: str = None
+    ) -> CalendarEvent:
+        """Erstellt Termin und sendet Einladung"""
+        pass
+
+    async def get_availability(
+        self,
+        user_id: UUID,
+        date_range: tuple[date, date]
+    ) -> list[TimeSlot]:
+        """Prüft Verfügbarkeit aus Kalender"""
+        pass
+```
+
+### 10.3 IoT & Smart-Meter Integration
+
+```python
+# services/integrations/iot.py
+import aiomqtt
+
+class IoTDataCollector:
+    """
+    Sammelt Daten von IoT-Geräten und Smart-Metern
+    """
+
+    async def connect_mqtt(self, broker_url: str):
+        """Verbindet mit MQTT-Broker"""
+        async with aiomqtt.Client(broker_url) as client:
+            await client.subscribe("energy/#")
+
+            async for message in client.messages:
+                await self._process_message(message)
+
+    async def _process_message(self, message):
+        """Verarbeitet eingehende Messwerte"""
+        topic = str(message.topic)
+        payload = json.loads(message.payload)
+
+        # topic: energy/{building_id}/{meter_type}
+        building_id = topic.split('/')[1]
+        meter_type = topic.split('/')[2]
+
+        await self.measurement_service.store(
+            building_id=building_id,
+            meter_type=meter_type,
+            timestamp=payload.get('timestamp', datetime.utcnow()),
+            value=payload['value'],
+            unit=payload.get('unit', 'kWh')
+        )
+
+    async def import_csv(
+        self,
+        building_id: UUID,
+        file: UploadFile,
+        mapping: dict
+    ) -> int:
+        """Importiert Messwerte aus CSV"""
+        pass
+```
+
+### 10.4 E-Mail-Integration
+
+```python
+# services/integrations/email.py
+class EmailIntegration:
+    """
+    E-Mail-Versand und -Empfang
+    """
+
+    async def send_with_tracking(
+        self,
+        to: str,
+        subject: str,
+        body_html: str,
+        attachments: list[str] = None,
+        track_opens: bool = True,
+        track_clicks: bool = True
+    ) -> str:
+        """Sendet E-Mail mit Tracking"""
+        message_id = str(uuid4())
+
+        # Tracking-Pixel einfügen
+        if track_opens:
+            body_html = self._add_tracking_pixel(body_html, message_id)
+
+        # Links tracken
+        if track_clicks:
+            body_html = self._wrap_links(body_html, message_id)
+
+        await self.smtp.send(to, subject, body_html, attachments)
+
+        return message_id
+
+    async def process_incoming(self):
+        """Verarbeitet eingehende E-Mails (IMAP)"""
+        async for email in self.imap.fetch_new():
+            # Projekt-Zuordnung versuchen
+            project = await self._match_to_project(email)
+
+            if project:
+                # Als Korrespondenz speichern
+                await self.document_service.save_email(
+                    project_id=project.id,
+                    email=email
+                )
+```
+
+---
+
+## 11. No-Code Automatisierung
+
+### 11.1 Workflow-Engine
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         NO-CODE WORKFLOW ENGINE                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  TRIGGER                    BEDINGUNGEN                AKTIONEN                 │
+│  ═══════                    ══════════                ════════                  │
+│                                                                                 │
+│  ┌─────────────┐           ┌─────────────┐          ┌─────────────┐           │
+│  │ Zeit-basiert│           │ Feld-Prüfung │          │  E-Mail     │           │
+│  │ (Cron)      │    ───▶   │ Status = X   │   ───▶   │  senden     │           │
+│  └─────────────┘           │ Betrag > Y   │          └─────────────┘           │
+│                            └─────────────┘                                      │
+│  ┌─────────────┐                                     ┌─────────────┐           │
+│  │ Ereignis    │           ┌─────────────┐          │ Status      │           │
+│  │ (Webhook)   │    ───▶   │    UND/ODER  │   ───▶   │ ändern      │           │
+│  └─────────────┘           │  Verknüpfung │          └─────────────┘           │
+│                            └─────────────┘                                      │
+│  ┌─────────────┐                                     ┌─────────────┐           │
+│  │ Daten-Änd.  │           ┌─────────────┐          │ Aufgabe     │           │
+│  │ (DB Event)  │    ───▶   │ Verzögerung │   ───▶   │ erstellen   │           │
+│  └─────────────┘           └─────────────┘          └─────────────┘           │
+│                                                                                 │
+│  ┌─────────────┐                                     ┌─────────────┐           │
+│  │ Manuell     │                                     │ Webhook     │           │
+│  │ (Button)    │           ───────────────────▶      │ aufrufen    │           │
+│  └─────────────┘                                     └─────────────┘           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 11.2 Workflow-Definition
+
+```python
+# models/workflow.py
+class Workflow:
+    """No-Code Workflow Definition"""
+
+    id: UUID
+    organization_id: UUID
+    name: str
+    description: str
+
+    trigger: WorkflowTrigger
+    conditions: list[WorkflowCondition]
+    actions: list[WorkflowAction]
+
+    is_active: bool
+    run_count: int
+    last_run_at: datetime
+
+class WorkflowTrigger:
+    type: TriggerType  # schedule, event, webhook, manual
+    config: dict
+
+    # schedule: {"cron": "0 9 * * *"}
+    # event: {"entity": "invoice", "event": "status_changed", "to": "overdue"}
+    # webhook: {"path": "/webhook/xyz", "method": "POST"}
+
+class WorkflowCondition:
+    field: str          # "invoice.total"
+    operator: str       # "gt", "eq", "contains", etc.
+    value: Any
+    logic: str          # "and", "or"
+
+class WorkflowAction:
+    type: ActionType
+    config: dict
+    order: int
+
+    # send_email: {"to": "{{customer.email}}", "template": "reminder"}
+    # update_status: {"entity": "invoice", "status": "reminded"}
+    # create_task: {"title": "...", "assignee": "..."}
+    # webhook: {"url": "...", "method": "POST", "body": {...}}
+```
+
+### 11.3 Vordefinierte Workflows
+
+```yaml
+# Workflow-Templates
+workflows:
+  invoice_reminder:
+    name: "Automatische Zahlungserinnerung"
+    trigger:
+      type: schedule
+      cron: "0 9 * * *"  # Täglich 9 Uhr
+    conditions:
+      - field: invoice.status
+        operator: eq
+        value: sent
+      - field: invoice.due_date
+        operator: lt
+        value: "{{today - 7 days}}"
+    actions:
+      - type: send_email
+        template: payment_reminder
+        to: "{{invoice.customer.email}}"
+      - type: update_field
+        entity: invoice
+        field: reminder_count
+        value: "{{invoice.reminder_count + 1}}"
+
+  project_completion:
+    name: "Projekt-Abschluss Workflow"
+    trigger:
+      type: event
+      entity: project
+      event: status_changed
+      to: done
+    actions:
+      - type: send_email
+        template: project_completed
+        to: "{{project.customer.email}}"
+      - type: create_task
+        title: "Rechnung erstellen"
+        assignee: "{{project.owner}}"
+        due_in_days: 3
+
+  new_customer_onboarding:
+    name: "Neukunden-Onboarding"
+    trigger:
+      type: event
+      entity: customer
+      event: created
+    actions:
+      - type: send_email
+        template: welcome
+        to: "{{customer.email}}"
+      - type: create_task
+        title: "Erstgespräch terminieren"
+        assignee: "{{customer.owner}}"
+      - type: webhook
+        url: "https://crm.example.com/api/new_lead"
+        method: POST
+```
+
+---
+
+## 12. Endkunden-Portal
+
+### 12.1 Portal-Konzept
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      ENDKUNDEN-PORTAL (Read-Only)                                │
+│                                                                                 │
+│  ⚠️ KEIN vollständiger Login - Token-basierter Zugang                           │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │  PROJEKTSTATUS                                                          │   │
+│  │  ═════════════                                                          │   │
+│  │                                                                         │   │
+│  │  Projekt: Energieberatung Musterstraße 1                               │   │
+│  │  Status:  ████████████░░░░ 75% - Bericht in Erstellung                 │   │
+│  │                                                                         │   │
+│  │  Timeline:                                                              │   │
+│  │  ✓ Auftragsannahme          15.11.2025                                 │   │
+│  │  ✓ Vor-Ort-Termin           18.11.2025                                 │   │
+│  │  ✓ Datenauswertung          20.11.2025                                 │   │
+│  │  ◐ Berichterstellung        In Arbeit                                  │   │
+│  │  ○ Abschlussgespräch        Geplant 28.11.2025                         │   │
+│  │                                                                         │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+│  ┌───────────────────────────┐  ┌───────────────────────────┐                 │
+│  │  DOKUMENTE                 │  │  UPLOAD                   │                 │
+│  │  ══════════                │  │  ══════                   │                 │
+│  │                            │  │                           │                 │
+│  │  📄 Angebot_2025-001.pdf  │  │  [Datei auswählen]       │                 │
+│  │  📄 Energieausweis.pdf    │  │                           │                 │
+│  │                            │  │  Hochladen:              │                 │
+│  │  [Download]               │  │  • Energierechnungen     │                 │
+│  │                            │  │  • Grundrisse            │                 │
+│  └───────────────────────────┘  │  • Fotos                 │                 │
+│                                  └───────────────────────────┘                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 12.2 Token-basierter Zugang
+
+```python
+# services/customer_portal.py
+class CustomerPortalService:
+    """
+    Endkunden-Portal mit Token-Zugang (KEIN Login!)
+    """
+
+    async def generate_access_link(
+        self,
+        project_id: UUID,
+        valid_days: int = 30
+    ) -> str:
+        """Generiert einmaligen Zugangslink"""
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.utcnow() + timedelta(days=valid_days)
+
+        await self.repository.create_token(
+            token=token,
+            project_id=project_id,
+            expires_at=expires_at
+        )
+
+        return f"https://app.energieberaterpro.de/portal/{token}"
+
+    async def get_portal_data(
+        self,
+        token: str
+    ) -> PortalData:
+        """Lädt Portal-Daten für Token"""
+        access = await self.repository.get_by_token(token)
+
+        if not access or access.expires_at < datetime.utcnow():
+            raise AccessDenied()
+
+        project = await self.project_service.get(access.project_id)
+
+        return PortalData(
+            project_name=project.name,
+            status=project.status,
+            progress=project.progress_percent,
+            milestones=project.milestones,
+            documents=await self._get_shared_documents(project.id),
+            can_upload=project.status == ProjectStatus.ACTIVE
+        )
+
+    async def handle_upload(
+        self,
+        token: str,
+        file: UploadFile
+    ) -> Document:
+        """Verarbeitet Upload vom Endkunden"""
+        access = await self.repository.get_by_token(token)
+        # ... Validierung ...
+
+        return await self.document_service.upload(
+            file=file,
+            project_id=access.project_id,
+            document_type=DocumentType.CUSTOMER_UPLOAD,
+            uploaded_by_customer=True
+        )
+```
+
+---
+
+*Letzte Aktualisierung: 2025-11-26*
+*Version: 2.0.0*

@@ -1,19 +1,60 @@
 # KI-Integration - Konzept und Architektur
 
+## Einleitung
+
+EnergieberaterPRO integriert KI-Funktionen auf allen Ebenen der Anwendung - von der Texterstellung über Computer Vision bis hin zu Predictive Analytics. Die Architektur folgt dem "Lokal-First" Prinzip für maximalen Datenschutz.
+
+---
+
 ## 1. Übersicht
 
 ### 1.1 Ziele der KI-Integration
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           KI-FUNKTIONEN ÜBERSICHT                               │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ╔═══════════════════════╗  ╔═══════════════════════╗  ╔═══════════════════╗  │
+│  ║   TEXTGENERIERUNG     ║  ║   COMPUTER VISION     ║  ║   ANALYTICS       ║  │
+│  ║   ▬▬▬▬▬▬▬▬▬▬▬▬▬      ║  ║   ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬   ║  ║   ▬▬▬▬▬▬▬▬▬▬▬    ║  │
+│  ║ ✓ Berichtstexte       ║  ║ ✓ Dokumenten-OCR      ║  ║ ✓ Benchmarking    ║  │
+│  ║ ✓ Empfehlungen        ║  ║ ✓ Typenschilder       ║  ║ ✓ Prognosen       ║  │
+│  ║ ✓ E-Mail-Entwürfe     ║  ║ ○ Plandigitalisierung ║  ║ ○ Anomalien       ║  │
+│  ║ ✓ Zusammenfassungen   ║  ║ ○ Fotoanalyse         ║  ║ ○ Wartung         ║  │
+│  ╚═══════════════════════╝  ╚═══════════════════════╝  ╚═══════════════════╝  │
+│                                                                                 │
+│  ╔═══════════════════════╗  ╔═══════════════════════╗  ╔═══════════════════╗  │
+│  ║   FÖRDERMITTEL-KI     ║  ║   RAG-SYSTEM          ║  ║   ASSISTENT       ║  │
+│  ║   ▬▬▬▬▬▬▬▬▬▬▬▬▬      ║  ║   ▬▬▬▬▬▬▬▬▬▬▬        ║  ║   ▬▬▬▬▬▬▬▬▬▬▬    ║  │
+│  ║ ✓ Programm-Suche      ║  ║ ✓ Normen-Wissen       ║  ║ ✓ Chat-Bot        ║  │
+│  ║ ✓ Matching            ║  ║ ✓ FAQ-Antworten       ║  ║ ✓ Kontexthilfe    ║  │
+│  ║ ✓ Förderhöhen         ║  ║ ✓ Quellenangaben      ║  ║ ○ Sprachassistent ║  │
+│  ║ ○ Antragsassistent    ║  ║ ○ Semantische Suche   ║  ║ ○ Multi-Modal     ║  │
+│  ╚═══════════════════════╝  ╚═══════════════════════╝  ╚═══════════════════╝  │
+│                                                                                 │
+│  Legende: ✓ = Phase 1-4  ○ = Phase 5-7                                         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Kernfunktionen:**
 - **Textgenerierung**: Automatische Erstellung von Berichtstexten
-- **Analyse**: Intelligente Auswertung von Gebäudedaten
-- **Empfehlungen**: Maßnahmenvorschläge basierend auf Berechnungen
-- **Assistent**: Interaktive Hilfe für Benutzer
-- **Datenextraktion**: Automatisches Auslesen von Dokumenten
+- **Computer Vision**: OCR, Typenschilder-Erkennung, Plananalyse
+- **Predictive Analytics**: Verbrauchsprognosen, Anomalie-Erkennung
+- **Fördermittel-KI**: Automatisches Matching Maßnahme → Förderprogramm
+- **RAG-System**: Wissensbasierte Antworten mit Quellenangaben
+- **Assistent**: Interaktiver Chat-Bot mit Kontextverständnis
 
 ### 1.2 Architekturprinzipien
-- **Lokal-First**: Primär lokale Modelle (Datenschutz)
-- **Modular**: Einfacher Austausch von LLM-Backends
-- **Fallback**: Graceful Degradation ohne KI
-- **Erklärbar**: Transparente Empfehlungen
+
+| Prinzip | Beschreibung |
+|---------|--------------|
+| **Lokal-First** | Primär lokale Modelle (Ollama) für maximalen Datenschutz |
+| **Modular** | Einfacher Austausch von LLM-Backends (Ollama ↔ OpenAI ↔ Claude) |
+| **Fallback** | Graceful Degradation ohne KI (Templates, Regeln) |
+| **Erklärbar** | Transparente Empfehlungen mit Begründung |
+| **Effizient** | Caching, Batch-Processing, optimierte Prompts |
 
 ---
 
@@ -785,16 +826,386 @@ async def initialize_knowledge_base(vectorstore: VectorStore):
 
 ---
 
-## 8. API Endpoints
+## 8. OCR & Computer Vision
+
+### 8.1 Architektur
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        COMPUTER VISION PIPELINE                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  INPUT                PREPROCESSING          EXTRACTION           OUTPUT        │
+│  ─────                ─────────────          ──────────           ──────        │
+│                                                                                 │
+│  ┌─────────┐         ┌─────────────┐        ┌───────────┐        ┌──────────┐ │
+│  │ Dokument │────────▶│ Bildkorrektur│───────▶│ Tesseract │───────▶│ JSON     │ │
+│  │ (PDF)    │         │ Entzerrung   │        │ OCR       │        │ Text     │ │
+│  └─────────┘         └─────────────┘        └───────────┘        └──────────┘ │
+│                                                                                 │
+│  ┌─────────┐         ┌─────────────┐        ┌───────────┐        ┌──────────┐ │
+│  │ Typen-  │────────▶│ Ausschnitt  │───────▶│ EasyOCR   │───────▶│ Geräte-  │ │
+│  │ schild  │         │ Erkennung   │        │           │        │ daten    │ │
+│  └─────────┘         └─────────────┘        └───────────┘        └──────────┘ │
+│                                                                                 │
+│  ┌─────────┐         ┌─────────────┐        ┌───────────┐        ┌──────────┐ │
+│  │ Grundriss│───────▶│ Vektorisier.│───────▶│ YOLO/     │───────▶│ Raum-    │ │
+│  │ (Foto)  │         │             │        │ LayoutLM  │        │ geometrie│ │
+│  └─────────┘         └─────────────┘        └───────────┘        └──────────┘ │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 8.2 Typenschilder-Erkennung
+
+```python
+# ai/vision/nameplate.py
+from PIL import Image
+import easyocr
+import re
+
+class NameplateExtractor:
+    """
+    Extrahiert Daten von Typenschildern (Heizung, Wärmepumpe, PV)
+    """
+
+    def __init__(self):
+        self.reader = easyocr.Reader(['de', 'en'])
+
+        # Muster für typische Felder
+        self.patterns = {
+            'leistung': r'(\d+(?:[,.]\d+)?)\s*(kW|W)',
+            'baujahr': r'(19|20)\d{2}',
+            'hersteller': r'(Viessmann|Buderus|Vaillant|Bosch|Wolf|...)',
+            'modell': r'(?:Typ|Type|Model)[:\s]*([A-Z0-9\-]+)',
+            'cop': r'COP[:\s]*(\d+[,.]\d+)',
+            'scop': r'SCOP[:\s]*(\d+[,.]\d+)',
+        }
+
+    async def extract(self, image: Image) -> dict:
+        """Extrahiert strukturierte Daten aus Typenschild"""
+        # OCR durchführen
+        results = self.reader.readtext(image)
+        text = ' '.join([r[1] for r in results])
+
+        # Felder extrahieren
+        extracted = {}
+        for field, pattern in self.patterns.items():
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                extracted[field] = match.group(1)
+
+        return {
+            'raw_text': text,
+            'extracted': extracted,
+            'confidence': self._calculate_confidence(results)
+        }
+```
+
+### 8.3 Dokumenten-OCR
+
+```python
+# ai/vision/document_ocr.py
+import pytesseract
+from pdf2image import convert_from_path
+
+class DocumentOCR:
+    """
+    OCR für Rechnungen, Energieausweise, Pläne
+    """
+
+    async def process_invoice(self, pdf_path: str) -> dict:
+        """Extrahiert Daten aus Energierechnungen"""
+        images = convert_from_path(pdf_path)
+
+        extracted = {
+            'verbrauch': [],
+            'kosten': [],
+            'zeitraum': None,
+            'anbieter': None
+        }
+
+        for image in images:
+            text = pytesseract.image_to_string(image, lang='deu')
+
+            # Strukturierte Extraktion
+            extracted['verbrauch'].extend(
+                self._extract_consumption(text)
+            )
+            extracted['kosten'].extend(
+                self._extract_costs(text)
+            )
+
+        return extracted
+```
+
+---
+
+## 9. Predictive Analytics
+
+### 9.1 Verbrauchsprognosen
+
+```python
+# ai/analytics/prediction.py
+from sklearn.ensemble import GradientBoostingRegressor
+import numpy as np
+
+class ConsumptionPredictor:
+    """
+    ML-basierte Verbrauchsprognosen
+    """
+
+    def __init__(self):
+        self.model = GradientBoostingRegressor(
+            n_estimators=100,
+            max_depth=5,
+            learning_rate=0.1
+        )
+
+    def prepare_features(self, building_data: dict, weather_data: dict) -> np.array:
+        """
+        Feature Engineering für Prognosemodell
+        """
+        return np.array([
+            building_data['heated_area'],
+            building_data['u_wall'],
+            building_data['u_roof'],
+            building_data['construction_year'],
+            weather_data['hdd'],  # Heizgradtage
+            weather_data['mean_temp'],
+            # ... weitere Features
+        ])
+
+    async def predict_annual_consumption(
+        self,
+        building_data: dict,
+        weather_scenario: str = 'normal'
+    ) -> dict:
+        """
+        Prognostiziert Jahresverbrauch
+        """
+        weather = self._get_weather_scenario(weather_scenario)
+        features = self.prepare_features(building_data, weather)
+
+        prediction = self.model.predict([features])[0]
+        confidence = self._calculate_confidence_interval(features)
+
+        return {
+            'predicted_kwh': prediction,
+            'confidence_low': confidence[0],
+            'confidence_high': confidence[1],
+            'scenario': weather_scenario
+        }
+```
+
+### 9.2 Anomalie-Erkennung
+
+```python
+# ai/analytics/anomaly.py
+from sklearn.ensemble import IsolationForest
+
+class AnomalyDetector:
+    """
+    Erkennt ungewöhnliche Verbrauchsmuster
+    """
+
+    def __init__(self):
+        self.model = IsolationForest(
+            contamination=0.05,
+            random_state=42
+        )
+
+    async def detect_anomalies(
+        self,
+        consumption_history: list[dict]
+    ) -> list[dict]:
+        """
+        Findet Anomalien in Verbrauchsdaten
+        """
+        features = self._prepare_time_series(consumption_history)
+        predictions = self.model.fit_predict(features)
+
+        anomalies = []
+        for i, pred in enumerate(predictions):
+            if pred == -1:  # Anomalie erkannt
+                anomalies.append({
+                    'timestamp': consumption_history[i]['timestamp'],
+                    'value': consumption_history[i]['value'],
+                    'expected_range': self._get_expected_range(i),
+                    'severity': self._calculate_severity(consumption_history[i])
+                })
+
+        return anomalies
+```
+
+---
+
+## 10. Fördermittel-KI
+
+### 10.1 Förderprogramm-Matching
+
+```python
+# ai/funding/matcher.py
+from app.ai.client import OllamaClient
+from app.ai.vectorstore import VectorStore
+
+class FundingMatcher:
+    """
+    Matcht Sanierungsmaßnahmen mit Förderprogrammen
+    """
+
+    def __init__(self, llm: OllamaClient, vectorstore: VectorStore):
+        self.llm = llm
+        self.vectorstore = vectorstore
+
+    async def find_programs(
+        self,
+        measure: dict,
+        location: dict,
+        building_data: dict
+    ) -> list[dict]:
+        """
+        Findet passende Förderprogramme
+        """
+        # Kontext aufbauen
+        query = f"""
+        Maßnahme: {measure['name']}
+        Kategorie: {measure['category']}
+        Land: {location['country']}
+        Bundesland: {location['state']}
+        Gebäudetyp: {building_data['type']}
+        """
+
+        # Relevante Programme aus Vector Store
+        programs = self.vectorstore.query(
+            collection_name="funding_programs",
+            query_text=query,
+            n_results=10,
+            where={"country": location['country'], "active": True}
+        )
+
+        # LLM-basiertes Matching und Ranking
+        matched = []
+        for program in programs:
+            eligibility = await self._check_eligibility(
+                measure, program, building_data
+            )
+            if eligibility['eligible']:
+                funding = await self._calculate_funding(
+                    measure, program, building_data
+                )
+                matched.append({
+                    'program': program,
+                    'eligibility': eligibility,
+                    'funding': funding,
+                    'score': eligibility['confidence']
+                })
+
+        return sorted(matched, key=lambda x: x['score'], reverse=True)
+
+    async def _calculate_funding(
+        self,
+        measure: dict,
+        program: dict,
+        building_data: dict
+    ) -> dict:
+        """
+        Berechnet erwartete Förderhöhe
+        """
+        base_rate = program['metadata'].get('rate', 0)
+        max_amount = program['metadata'].get('max_amount', float('inf'))
+
+        # Bonusfaktoren
+        bonuses = 0
+        if building_data.get('worst_performing'):
+            bonuses += program['metadata'].get('wpb_bonus', 0)
+        if measure.get('exceeds_requirements'):
+            bonuses += program['metadata'].get('efficiency_bonus', 0)
+
+        total_rate = min(base_rate + bonuses, 0.5)  # Max 50%
+
+        eligible_costs = measure['investment']
+        funding_amount = min(eligible_costs * total_rate, max_amount)
+
+        return {
+            'rate': total_rate,
+            'amount': funding_amount,
+            'eligible_costs': eligible_costs,
+            'bonuses_applied': bonuses > 0
+        }
+```
+
+### 10.2 Förderdatenbank
+
+```
+Collections in ChromaDB:
+├── funding_programs_de          # BEG, KfW, Landesförderungen
+│   ├── metadata: {country, state, category, rate, max_amount, deadline}
+│   └── document: Programmbeschreibung, Voraussetzungen
+├── funding_programs_at          # Sanierungsoffensive, Landesförderungen
+│   ├── metadata: {country, state, category, rate, max_amount, deadline}
+│   └── document: Programmbeschreibung, Voraussetzungen
+└── funding_faq                  # Häufige Fragen zu Förderungen
+```
+
+### 10.3 Automatische Aktualisierung
+
+```python
+# ai/funding/updater.py
+class FundingDatabaseUpdater:
+    """
+    Hält Förderdatenbank aktuell
+    """
+
+    async def update_from_sources(self):
+        """
+        Aktualisiert aus offiziellen Quellen
+        """
+        sources = [
+            'https://www.bafa.de/...',
+            'https://www.kfw.de/...',
+            'https://www.umweltfoerderung.at/...'
+        ]
+
+        for source in sources:
+            # Web-Scraping oder API-Abruf
+            data = await self._fetch_source(source)
+
+            # LLM-basierte Strukturierung
+            structured = await self._structure_with_llm(data)
+
+            # Upsert in Vector Store
+            await self._update_vectorstore(structured)
+
+    async def notify_changes(self):
+        """
+        Benachrichtigt über Programmänderungen
+        """
+        changes = await self._detect_changes()
+
+        for change in changes:
+            await self._send_notification(
+                type=change['type'],  # 'new', 'modified', 'expired'
+                program=change['program']
+            )
+```
+
+---
+
+## 11. API Endpoints
 
 ```python
 # api/v1/ai.py
 from fastapi import APIRouter, Depends
 from app.ai.agents import ReportAgent, AnalysisAgent
 from app.ai.rag import RAGService
+from app.ai.vision import NameplateExtractor, DocumentOCR
+from app.ai.funding import FundingMatcher
+from app.ai.analytics import ConsumptionPredictor, AnomalyDetector
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 
+# --- Textgenerierung ---
 @router.post("/generate/building-description")
 async def generate_building_description(
     building_id: UUID,
@@ -811,6 +1222,7 @@ async def generate_recommendations(
     """Generiert Sanierungsempfehlungen"""
     pass
 
+# --- Analyse ---
 @router.post("/analyze/building")
 async def analyze_building(
     building_id: UUID,
@@ -819,6 +1231,59 @@ async def analyze_building(
     """Analysiert Gebäude und gibt Bewertung"""
     pass
 
+# --- Computer Vision ---
+@router.post("/ocr/nameplate")
+async def extract_nameplate(
+    image: UploadFile,
+    extractor: NameplateExtractor = Depends()
+) -> dict:
+    """Extrahiert Daten aus Typenschild-Foto"""
+    pass
+
+@router.post("/ocr/document")
+async def process_document(
+    file: UploadFile,
+    doc_type: str,  # 'invoice', 'energy_certificate', 'plan'
+    ocr: DocumentOCR = Depends()
+) -> dict:
+    """OCR für verschiedene Dokumenttypen"""
+    pass
+
+# --- Fördermittel ---
+@router.post("/funding/match")
+async def match_funding(
+    measure_id: UUID,
+    matcher: FundingMatcher = Depends()
+) -> list[dict]:
+    """Findet passende Förderprogramme"""
+    pass
+
+@router.get("/funding/programs")
+async def list_funding_programs(
+    country: str,
+    category: str = None
+) -> list[dict]:
+    """Listet verfügbare Förderprogramme"""
+    pass
+
+# --- Analytics ---
+@router.post("/analytics/predict")
+async def predict_consumption(
+    building_id: UUID,
+    predictor: ConsumptionPredictor = Depends()
+) -> dict:
+    """Prognostiziert Jahresverbrauch"""
+    pass
+
+@router.post("/analytics/anomalies")
+async def detect_anomalies(
+    building_id: UUID,
+    detector: AnomalyDetector = Depends()
+) -> list[dict]:
+    """Erkennt Verbrauchsanomalien"""
+    pass
+
+# --- Chat & RAG ---
 @router.post("/chat")
 async def chat(
     message: str,
@@ -834,15 +1299,16 @@ async def ai_status() -> dict:
     return {
         "llm_available": True,
         "vectorstore_available": True,
+        "ocr_available": True,
         "models": await llm_client.list_models()
     }
 ```
 
 ---
 
-## 9. Offline-Fähigkeit
+## 12. Offline-Fähigkeit
 
-### 9.1 Fallback-Strategien
+### 12.1 Fallback-Strategien
 
 ```python
 class AIServiceWithFallback:
@@ -871,5 +1337,5 @@ class AIServiceWithFallback:
 
 ---
 
-*Letzte Aktualisierung: 2025-11-25*
-*Version: 0.1.0*
+*Letzte Aktualisierung: 2025-11-26*
+*Version: 2.0.0*

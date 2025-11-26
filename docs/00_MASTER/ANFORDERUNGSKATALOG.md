@@ -1,6 +1,6 @@
 # Vollständiger Anforderungskatalog
 
-## Version 2.1 - November 2025
+## Version 3.0 - November 2025
 
 ---
 
@@ -281,19 +281,41 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 #### 2.7.1 Textgenerierung
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
-| KI-001 | Berichtstexte generieren | HOCH |
-| KI-002 | Maßnahmenempfehlungen | HOCH |
-| KI-003 | E-Mail-Entwürfe mit Kontext | HOCH |
-| KI-004 | Zusammenfassungen | MITTEL |
+| KI-001 | Berichtstexte generieren (Energieausweise, Audits) | HOCH |
+| KI-002 | Maßnahmenempfehlungen mit Kostenabschätzung | HOCH |
+| KI-003 | E-Mail-Entwürfe mit Projektkontext | HOCH |
+| KI-004 | Zusammenfassungen und Abstracts | MITTEL |
+| KI-005 | Mehrsprachige Ausgabe (DE, EN) | NIEDRIG |
 
-#### 2.7.2 Analyse
+#### 2.7.2 Analyse & Predictive Analytics
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
-| KI-005 | Gebäudeanalyse und Bewertung | HOCH |
-| KI-006 | Optimierungsvorschläge | MITTEL |
-| KI-007 | Benchmarking | MITTEL |
+| KI-010 | Gebäudeanalyse und Bewertung | HOCH |
+| KI-011 | Optimierungsvorschläge | MITTEL |
+| KI-012 | Benchmarking mit anonymisierten Daten | MITTEL |
+| KI-013 | Verbrauchsprognosen (ML-basiert) | MITTEL |
+| KI-014 | Wartungsvorhersagen für Anlagen | NIEDRIG |
+| KI-015 | Anomalie-Erkennung bei Verbrauchsdaten | NIEDRIG |
 
-#### 2.7.3 Tool-Integration (MCP)
+#### 2.7.3 OCR & Computer Vision
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| KI-020 | Dokumenten-OCR (Rechnungen, Pläne) | HOCH |
+| KI-021 | Typenschilder-Erkennung (Heizung, PV) | HOCH |
+| KI-022 | Plandigitalisierung (Grundrisse) | MITTEL |
+| KI-023 | Fotoanalyse Gebäudezustand | NIEDRIG |
+| KI-024 | Automatische Bauteil-Erkennung | NIEDRIG |
+
+#### 2.7.4 Fördermittel-KI
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| KI-030 | Automatische Förderprogramm-Suche | HOCH |
+| KI-031 | Matching Maßnahme → Förderprogramm | HOCH |
+| KI-032 | Förderhöhen-Berechnung | HOCH |
+| KI-033 | Antragsunterstützung (Checklisten) | MITTEL |
+| KI-034 | Aktualisierung bei Programmänderungen | MITTEL |
+
+#### 2.7.5 Tool-Integration (MCP)
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
 | MCP-001 | Model Context Protocol Integration | HOCH |
@@ -361,6 +383,127 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 | TKT-002 | Screenshot-Funktion | MITTEL |
 | TKT-003 | Status-Tracking | HOCH |
 | TKT-004 | Eskalation | NIEDRIG |
+
+---
+
+### 2.12 Externe Integrationen
+
+#### 2.12.1 Buchhaltungs-Integration
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| INT-001 | DATEV-Export (Buchungssätze) | HOCH |
+| INT-002 | Lexoffice API-Integration | HOCH |
+| INT-003 | sevDesk API-Integration | MITTEL |
+| INT-004 | BMD-Export (Österreich) | MITTEL |
+| INT-005 | Automatische Rechnungsübernahme | MITTEL |
+| INT-006 | Kontenrahmen-Mapping (SKR03/04, Österreich) | HOCH |
+
+#### 2.12.2 Kalender-Integration
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| INT-010 | CalDAV-Synchronisation | MITTEL |
+| INT-011 | Google Calendar API | MITTEL |
+| INT-012 | Microsoft Outlook/Graph API | MITTEL |
+| INT-013 | Terminerinnerungen | HOCH |
+| INT-014 | Ressourcenplanung (Mitarbeiter) | NIEDRIG |
+
+#### 2.12.3 IoT & Messgeräte
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| INT-020 | Smart-Meter-Anbindung (MQTT) | MITTEL |
+| INT-021 | Wetterstationen-Integration | NIEDRIG |
+| INT-022 | Raumklima-Sensoren | NIEDRIG |
+| INT-023 | Messgeräte-Import (CSV, API) | MITTEL |
+| INT-024 | Echtzeit-Monitoring-Dashboard | NIEDRIG |
+
+#### 2.12.4 BIM & CAD
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| INT-030 | IFC-Import (BIM) | NIEDRIG |
+| INT-031 | DXF/DWG-Import (Grundrisse) | NIEDRIG |
+| INT-032 | gbXML-Import/Export | NIEDRIG |
+| INT-033 | Automatische Geometrie-Extraktion | NIEDRIG |
+
+---
+
+### 2.13 Erweiterte Berechnungen
+
+#### 2.13.1 Bauphysik - Erweitert
+| ID | Anforderung | Norm | Priorität |
+|----|-------------|------|-----------|
+| CALC-E-001 | Tauwasserschutz (Glaser-Verfahren) | DIN 4108-3 | HOCH |
+| CALC-E-002 | Sommerlicher Wärmeschutz | DIN 4108-2 | HOCH |
+| CALC-E-003 | Hygrothermische Simulation | EN 15026 | NIEDRIG |
+| CALC-E-004 | Luftdichtheitsprüfung | DIN EN 13829 | MITTEL |
+| CALC-E-005 | Schallschutznachweis | DIN 4109 | NIEDRIG |
+
+#### 2.13.2 Tageslicht & Beleuchtung
+| ID | Anforderung | Norm | Priorität |
+|----|-------------|------|-----------|
+| CALC-E-010 | Tageslichtquotient | EN 17037 | MITTEL |
+| CALC-E-011 | Beleuchtungsberechnung | DIN V 18599-4 | HOCH |
+| CALC-E-012 | Kunstlichtbedarf | DIN EN 12464-1 | MITTEL |
+
+#### 2.13.3 Lebenszyklusanalyse (LCA)
+| ID | Anforderung | Norm | Priorität |
+|----|-------------|------|-----------|
+| CALC-E-020 | Graue Energie Baustoffe | EN 15978 | MITTEL |
+| CALC-E-021 | CO2-Fußabdruck Bau | EN 15804 | MITTEL |
+| CALC-E-022 | Ökobilanzierung Gebäude | DGNB, BNB | NIEDRIG |
+| CALC-E-023 | Recyclingpotenzial | EN 15804+A2 | NIEDRIG |
+
+---
+
+### 2.14 No-Code Automatisierung
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| NCA-001 | Visueller Workflow-Editor | MITTEL |
+| NCA-002 | Trigger-Typen (Zeit, Ereignis, Daten) | MITTEL |
+| NCA-003 | Vordefinierte Aktionen (E-Mail, Status, etc.) | MITTEL |
+| NCA-004 | Bedingte Verzweigungen | MITTEL |
+| NCA-005 | Vorlagen-Bibliothek für Workflows | NIEDRIG |
+| NCA-006 | Webhook-Integration | NIEDRIG |
+
+---
+
+### 2.15 Benchmarking & Gamification
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| BEN-001 | Anonymisierter Gebäudevergleich | MITTEL |
+| BEN-002 | Branchenvergleich (Energieberater) | NIEDRIG |
+| BEN-003 | Achievements/Badges System | NIEDRIG |
+| BEN-004 | Fortschrittsanzeigen | MITTEL |
+| BEN-005 | Effizienz-Rankings (opt-in) | NIEDRIG |
+
+---
+
+### 2.16 Ökosystem & Marktplatz
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| ECO-001 | Plugin-Architektur | MITTEL |
+| ECO-002 | Plugin-API und SDK | MITTEL |
+| ECO-003 | Vorlagen-Marktplatz | NIEDRIG |
+| ECO-004 | Partner-Integrationen | NIEDRIG |
+| ECO-005 | White-Label-Optionen | NIEDRIG |
+| ECO-006 | Reseller-Portal | NIEDRIG |
+
+---
+
+### 2.17 Endkunden-Portal
+
+⚠️ **Hinweis:** Endkunden haben weiterhin KEINEN vollständigen Login! Das Portal ist ein eingeschränkter Zugang.
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| EKP-001 | Einmaliger Link-Zugang (Token-basiert) | MITTEL |
+| EKP-002 | Read-Only Projektstatus | MITTEL |
+| EKP-003 | Dokumenten-Download | MITTEL |
+| EKP-004 | Dokumenten-Upload (Rechnungen, Fotos) | MITTEL |
+| EKP-005 | Nachrichten an Berater | NIEDRIG |
+| EKP-006 | Digitale Auftragsannahme | MITTEL |
 
 ---
 
@@ -512,5 +655,5 @@ Enterprise:
 
 ---
 
-*Letzte Aktualisierung: 2025-11-25*
-*Version: 2.1.0*
+*Letzte Aktualisierung: 2025-11-26*
+*Version: 3.0.0*

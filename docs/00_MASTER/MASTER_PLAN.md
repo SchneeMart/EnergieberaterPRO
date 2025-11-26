@@ -63,13 +63,40 @@ Eine allumfassende, wissenschaftlich fundierte **SaaS-Webanwendung** für profes
 
 ## 3. Technologie-Stack
 
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           TECHNOLOGIE-STACK                                      │
+├──────────────────────────┬──────────────────────────────────────────────────────┤
+│        BACKEND           │                    FRONTEND                           │
+│  ┌────────────────────┐  │  ┌────────────────────────────────────────────────┐  │
+│  │  FastAPI           │  │  │  Alpine.js + Vanilla JS                        │  │
+│  │  Python 3.11+      │  │  │  Tailwind CSS + Custom Design System           │  │
+│  │  PostgreSQL 16     │  │  │  D3.js + Chart.js (Visualisierung)             │  │
+│  │  Redis 7           │  │  │  Yjs (CRDT Echtzeit-Kollaboration)            │  │
+│  │  Celery            │  │  │  PDF.js + html2pdf                             │  │
+│  │  MinIO             │  │  │  Lucide Icons                                  │  │
+│  └────────────────────┘  │  └────────────────────────────────────────────────┘  │
+├──────────────────────────┼──────────────────────────────────────────────────────┤
+│          KI              │                 INFRASTRUKTUR                         │
+│  ┌────────────────────┐  │  ┌────────────────────────────────────────────────┐  │
+│  │  Ollama (lokal)    │  │  │  Docker + Docker Compose                       │  │
+│  │  OpenAI (optional) │  │  │  Caddy (Auto-HTTPS)                            │  │
+│  │  Tesseract OCR     │  │  │  Prometheus + Grafana                          │  │
+│  │  ChromaDB          │  │  │  Loki (Logging)                                │  │
+│  │  sentence-transf.  │  │  │  MinIO (S3-kompatibel)                         │  │
+│  └────────────────────┘  │  └────────────────────────────────────────────────┘  │
+└──────────────────────────┴──────────────────────────────────────────────────────┘
+```
+
 ### 3.1 Backend
 ```
 Framework:      FastAPI (Python 3.11+)
-Datenbank:      PostgreSQL 16 + TimescaleDB
+Datenbank:      PostgreSQL 16 + TimescaleDB (Zeitreihen)
 Cache:          Redis 7
 Task Queue:     Celery + Redis
 Dateispeicher:  MinIO (S3-kompatibel)
+Suche:          PostgreSQL Full-Text + pg_trgm
+Scheduling:     APScheduler / Celery Beat
 ```
 
 ### 3.2 Frontend
@@ -79,21 +106,38 @@ Styling:        Tailwind CSS + Custom Design System
 Charts:         D3.js + Chart.js
 PDF:            PDF.js + html2pdf
 Icons:          Lucide Icons (SVG)
+Kollaboration:  Yjs (CRDT für Echtzeit-Bearbeitung)
+Formulare:      JSON Schema + Alpine-Validierung
+PWA:            Service Worker für Offline-Fähigkeit
 ```
 
 ### 3.3 KI-Integration
 ```
-LLM:            Ollama (lokal) / OpenAI API (optional)
-Embeddings:     sentence-transformers (lokal)
+LLM:            Ollama (lokal) / OpenAI API / Claude API (optional)
+Embeddings:     sentence-transformers (paraphrase-multilingual)
 Vektor-DB:      ChromaDB
+OCR:            Tesseract + EasyOCR (Typenschilder)
+Computer Vision: OpenCV + YOLO (Plananalyse)
+RAG:            LangChain / LlamaIndex
 ```
 
-### 3.4 Infrastruktur
+### 3.4 Integrationen
+```
+Buchhaltung:    DATEV-Export, Lexoffice API, sevDesk API, BMD (AT)
+Kalender:       CalDAV, Google Calendar API, Microsoft Graph
+IoT:            MQTT-Broker, REST-APIs für Smart Meter
+E-Mail:         SMTP, IMAP (Eingangsverarbeitung)
+Signaturen:     DocuSign API / lokale Signatur (eIDAS)
+```
+
+### 3.5 Infrastruktur
 ```
 Container:      Docker + Docker Compose
 Reverse Proxy:  Caddy (automatisches HTTPS)
 Monitoring:     Prometheus + Grafana
-Logging:        Loki
+Logging:        Loki + Promtail
+Backup:         restic + MinIO
+CI/CD:          GitHub Actions / GitLab CI
 ```
 
 ---
@@ -120,17 +164,58 @@ Logging:        Loki
 ### 4.3 Geschäftsmodule (Phase 3)
 | Modul | Beschreibung | Priorität |
 |-------|--------------|-----------|
-| Angebotswesen | Angebote, Vorlagen | MITTEL |
-| Rechnungswesen | Rechnungen, Mahnwesen | MITTEL |
-| Zeiterfassung | Projektzeiten, Auswertung | MITTEL |
-| Dokumentenmanagement | Ablage, Versionierung | MITTEL |
+| Angebotswesen | Angebote, Vorlagen, digitale Signatur | MITTEL |
+| Rechnungswesen | Rechnungen, Mahnwesen, DATEV-Export | MITTEL |
+| Zeiterfassung | Automatische Zeiterfassung nach Modulnutzung | MITTEL |
+| Dokumentenmanagement | Ablage, Versionierung, Volltextsuche | MITTEL |
 
 ### 4.4 Ausgabemodule (Phase 4)
 | Modul | Beschreibung | Priorität |
 |-------|--------------|-----------|
-| Berichtsgenerator | Energieausweise, Audits | KRITISCH |
+| Berichtsgenerator | Energieausweise, Audits, iSFP | KRITISCH |
 | KI-Textassistent | Beschreibungen, Empfehlungen | HOCH |
-| Export | PDF, Excel, XML (BAFA) | HOCH |
+| Export | PDF, Excel, XML (BAFA, dena) | HOCH |
+
+### 4.5 Erweiterte Berechnungsmodule (Phase 5)
+| Modul | Beschreibung | Priorität |
+|-------|--------------|-----------|
+| Tauwasserschutz | Glaser-Verfahren, DIN 4108-3 | HOCH |
+| Sommerlicher Wärmeschutz | DIN 4108-2, Überhitzungsnachweis | HOCH |
+| Lebenszyklusanalyse (LCA) | Graue Energie, CO2-Fußabdruck Baustoffe | MITTEL |
+| Tageslichtberechnung | Tageslichtquotienten, EN 17037 | MITTEL |
+| Feuchteschutz erweitert | Hygrothermische Simulation | NIEDRIG |
+
+### 4.6 Kollaborationsmodule (Phase 5)
+| Modul | Beschreibung | Priorität |
+|-------|--------------|-----------|
+| Echtzeit-Bearbeitung | CRDT-basiert (Yjs), Multi-User Editing | HOCH |
+| Kommentar-System | Inline-Kommentare, @-Erwähnungen | MITTEL |
+| Endkunden-Portal | Read-Only Projektstatus, Dokumenten-Upload | MITTEL |
+| Kalender-Integration | CalDAV, Google Calendar, Outlook | MITTEL |
+
+### 4.7 Erweiterte KI-Module (Phase 6)
+| Modul | Beschreibung | Priorität |
+|-------|--------------|-----------|
+| OCR & Computer Vision | Plandigitalisierung, Typenschilder lesen | HOCH |
+| Predictive Analytics | Verbrauchsprognosen, Wartungsvorhersagen | MITTEL |
+| Fördermittel-KI | Automatische Förderprogramm-Suche & Matching | HOCH |
+| Sprachassistent | Voice-to-Text Eingabe, Diktieren | NIEDRIG |
+
+### 4.8 Integrationsmodule (Phase 6)
+| Modul | Beschreibung | Priorität |
+|-------|--------------|-----------|
+| Buchhaltung | DATEV, Lexoffice, sevDesk, BMD (AT) | HOCH |
+| IoT-Integration | Smart Meter, Wetterstationen, Sensoren | MITTEL |
+| No-Code Workflows | Visueller Workflow-Editor, Trigger/Actions | MITTEL |
+| BIM-Import | IFC-Dateien, Revit-Integration | NIEDRIG |
+
+### 4.9 Ökosystem-Module (Phase 7)
+| Modul | Beschreibung | Priorität |
+|-------|--------------|-----------|
+| Plugin-System | Erweiterbare Architektur, API für Plugins | MITTEL |
+| Vorlagen-Marktplatz | Berichtsvorlagen kaufen/verkaufen | NIEDRIG |
+| Benchmarking | Anonymisierter Gebäudevergleich | MITTEL |
+| Partner-API | White-Label, Reseller-Integration | NIEDRIG |
 
 ---
 
@@ -216,35 +301,72 @@ Geschäft (Organisation → Endkunde)
 
 ## 7. Entwicklungsphasen
 
-### Phase 1: Fundament (Wochen 1-4)
-- [ ] Docker-Umgebung aufsetzen
-- [ ] Datenbank-Schema erstellen
-- [ ] Authentifizierung implementieren
-- [ ] Grundlegendes UI-Framework
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           ENTWICKLUNGS-ROADMAP                                   │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  Phase 1 ──▶ Phase 2 ──▶ Phase 3 ──▶ Phase 4 ──▶ Phase 5 ──▶ Phase 6 ──▶ Phase 7│
+│  Fundament   Kern       Berechnung  Geschäft   Erweitert   KI & Int.   Ökosystem│
+│                                                                                  │
+│  ████████    ████████   ████████    ████████   ████████    ████████    ░░░░░░░░ │
+│  KRITISCH    KRITISCH   KRITISCH    HOCH       HOCH        MITTEL      NIEDRIG  │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
 
-### Phase 2: Kernfunktionen (Wochen 5-12)
-- [ ] Projektmanagement
-- [ ] Gebäudeerfassung
-- [ ] Basisberechnungen (U-Werte, Flächen)
-- [ ] Erste Berichte
+### Phase 1: Fundament
+- [ ] Docker-Umgebung mit allen Services aufsetzen
+- [ ] PostgreSQL mit Row-Level-Security konfigurieren
+- [ ] Authentifizierung (JWT, MFA, RBAC) implementieren
+- [ ] Grundlegendes UI-Framework (Alpine.js, Tailwind CSS)
+- [ ] Design-System und Komponenten-Bibliothek
 
-### Phase 3: Berechnungsmodule (Wochen 13-24)
-- [ ] Heizlast (DIN EN 12831)
-- [ ] Energiebilanz (DIN V 18599)
-- [ ] Erneuerbare Energien
-- [ ] CO2-Bilanzierung
+### Phase 2: Kernfunktionen
+- [ ] Multi-Tenant Organisations- und Benutzerverwaltung
+- [ ] Projektmanagement mit Vorlagensystem
+- [ ] Gebäudeerfassung mit Zonierung
+- [ ] Basisberechnungen (U-Werte, Flächen, Volumen)
+- [ ] Erste Berichtsvorlagen (PDF-Export)
 
-### Phase 4: Geschäftslogik (Wochen 25-32)
-- [ ] Angebotswesen
-- [ ] Rechnungswesen
-- [ ] Zeiterfassung
-- [ ] Dokumentenmanagement
+### Phase 3: Berechnungsmodule
+- [ ] Heizlast (DIN EN 12831 / ÖNORM B 8110)
+- [ ] Kühllast (VDI 2078)
+- [ ] Energiebilanz (DIN V 18599 / ÖNORM H 5050)
+- [ ] Erneuerbare Energien (PV, Solarthermie, Wärmepumpen)
+- [ ] CO2-Bilanzierung (GHG Protocol)
+- [ ] Wirtschaftlichkeitsberechnungen
 
-### Phase 5: KI & Optimierung (Wochen 33-40)
-- [ ] KI-Textgenerierung
-- [ ] Automatisierte Analysen
-- [ ] Performance-Optimierung
-- [ ] Finale Tests
+### Phase 4: Geschäftslogik
+- [ ] Endkunden-Verwaltung (CRM-Funktionen)
+- [ ] Angebotswesen mit digitaler Signatur
+- [ ] Rechnungswesen mit DATEV-Export
+- [ ] Automatische Zeiterfassung
+- [ ] Dokumentenmanagement mit Versionierung
+
+### Phase 5: Erweiterte Module
+- [ ] Tauwasserschutz (Glaser-Verfahren)
+- [ ] Sommerlicher Wärmeschutz
+- [ ] Lebenszyklusanalyse (LCA)
+- [ ] Echtzeit-Kollaboration (Yjs/CRDT)
+- [ ] Kommentar-System und Annotationen
+- [ ] Endkunden-Portal (Read-Only)
+
+### Phase 6: KI & Integrationen
+- [ ] Basis-KI (Textgenerierung, Empfehlungen)
+- [ ] OCR/Computer Vision (Pläne, Typenschilder)
+- [ ] Fördermittel-KI mit automatischem Matching
+- [ ] Predictive Analytics
+- [ ] Buchhaltungs-Integrationen (DATEV, Lexoffice, BMD)
+- [ ] IoT-Integration (Smart Meter, Sensoren)
+- [ ] No-Code Workflow-Editor
+
+### Phase 7: Ökosystem
+- [ ] Plugin-System und Erweiterungs-API
+- [ ] Vorlagen-Marktplatz
+- [ ] Benchmarking-System
+- [ ] Partner-API und White-Label
+- [ ] BIM-Import (IFC)
 
 ---
 
@@ -315,5 +437,5 @@ Geschäft (Organisation → Endkunde)
 
 ---
 
-*Letzte Aktualisierung: 2025-11-25*
-*Version: 1.0.0*
+*Letzte Aktualisierung: 2025-11-26*
+*Version: 2.0.0*

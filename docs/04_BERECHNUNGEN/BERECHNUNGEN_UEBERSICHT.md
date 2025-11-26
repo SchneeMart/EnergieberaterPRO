@@ -1,78 +1,157 @@
 # Energieberechnungs-Module - Übersicht
 
+## Einleitung
+
+EnergieberaterPRO bietet ein umfassendes Berechnungssystem für alle Aspekte der Gebäudeenergetik. Die Module sind normkonform für **Deutschland (DIN)** und **Österreich (ÖNORM)** implementiert und werden automatisch basierend auf dem Land der Organisation ausgewählt.
+
+---
+
 ## 1. Berechnungskategorien
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        ENERGIEBERECHNUNGS-ENGINE                            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐ │
-│  │    BAUPHYSIK        │    │   ANLAGENTECHNIK    │    │   ERNEUERBARE   │ │
-│  ├─────────────────────┤    ├─────────────────────┤    ├─────────────────┤ │
-│  │ • U-Wert-Berechnung │    │ • Wärmeerzeuger     │    │ • Photovoltaik  │ │
-│  │ • Wärmebrücken      │    │ • Wärmeverteilung   │    │ • Solarthermie  │ │
-│  │ • Feuchteschutz     │    │ • Wärmeübergabe     │    │ • Wärmepumpen   │ │
-│  │ • Sommerl. Wärme    │    │ • Trinkwarmwasser   │    │ • Biomasse      │ │
-│  │ • Luftdichtheit     │    │ • Lüftung           │    │ • Wind (klein)  │ │
-│  │ • Tageslicht        │    │ • Kühlung           │    │ • Geothermie    │ │
-│  └─────────────────────┘    │ • Beleuchtung       │    └─────────────────┘ │
-│                             └─────────────────────┘                         │
-│                                                                             │
-│  ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐ │
-│  │   ENERGIEBILANZ     │    │    EMISSIONEN       │    │  WIRTSCHAFT     │ │
-│  ├─────────────────────┤    ├─────────────────────┤    ├─────────────────┤ │
-│  │ • Heizwärmebedarf   │    │ • CO2-Bilanz        │    │ • Investition   │ │
-│  │ • Kühlbedarf        │    │ • Primärenergie     │    │ • Betriebskosten│ │
-│  │ • Endenergiebedarf  │    │ • Emissionsfaktoren │    │ • Amortisation  │ │
-│  │ • Primärenergie     │    │ • THG-Bilanz        │    │ • Kapitalwert   │ │
-│  │ • Energieausweis    │    │ • Scope 1/2/3       │    │ • Förderung     │ │
-│  └─────────────────────┘    └─────────────────────┘    └─────────────────┘ │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        ENERGIEBERECHNUNGS-ENGINE v2.0                           │
+│                     ═══════════════════════════════════                         │
+│                                                                                 │
+│     DE: DIN V 18599 | DIN EN 12831 | GEG 2024                                  │
+│     AT: ÖNORM B 8110 | ÖNORM H 5050 | OIB-RL 6                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ╔═══════════════════════╗  ╔═══════════════════════╗  ╔═══════════════════╗  │
+│  ║    BAUPHYSIK          ║  ║   ANLAGENTECHNIK      ║  ║   ERNEUERBARE     ║  │
+│  ║   ▬▬▬▬▬▬▬▬▬▬▬▬       ║  ║   ▬▬▬▬▬▬▬▬▬▬▬▬▬▬     ║  ║   ▬▬▬▬▬▬▬▬▬▬▬    ║  │
+│  ║ ✓ U-Wert-Berechnung   ║  ║ ✓ Wärmeerzeuger       ║  ║ ✓ Photovoltaik    ║  │
+│  ║ ✓ Wärmebrücken (ψ)    ║  ║ ✓ Wärmeverteilung     ║  ║ ✓ Solarthermie    ║  │
+│  ║ ✓ Tauwasserschutz     ║  ║ ✓ Wärmeübergabe       ║  ║ ✓ Wärmepumpen     ║  │
+│  ║ ✓ Sommerl. Wärmeschutz║  ║ ✓ Trinkwarmwasser     ║  ║ ✓ Biomasse        ║  │
+│  ║ ✓ Luftdichtheit       ║  ║ ✓ Lüftung/WRG         ║  ║ ✓ Kleinwind       ║  │
+│  ║ ✓ Tageslicht          ║  ║ ✓ Kühlung             ║  ║ ✓ Geothermie      ║  │
+│  ║ ○ Hygrothermik        ║  ║ ✓ Beleuchtung         ║  ║ ○ Wasserstoff     ║  │
+│  ╚═══════════════════════╝  ╚═══════════════════════╝  ╚═══════════════════╝  │
+│                                                                                 │
+│  ╔═══════════════════════╗  ╔═══════════════════════╗  ╔═══════════════════╗  │
+│  ║   ENERGIEBILANZ       ║  ║    EMISSIONEN         ║  ║  WIRTSCHAFT       ║  │
+│  ║   ▬▬▬▬▬▬▬▬▬▬▬▬       ║  ║   ▬▬▬▬▬▬▬▬▬▬▬        ║  ║  ▬▬▬▬▬▬▬▬▬▬▬▬    ║  │
+│  ║ ✓ Heizwärmebedarf     ║  ║ ✓ CO2-Bilanz          ║  ║ ✓ Investition     ║  │
+│  ║ ✓ Kühlbedarf          ║  ║ ✓ Primärenergie       ║  ║ ✓ Betriebskosten  ║  │
+│  ║ ✓ Endenergiebedarf    ║  ║ ✓ Emissionsfaktoren   ║  ║ ✓ Amortisation    ║  │
+│  ║ ✓ Primärenergie       ║  ║ ✓ THG-Bilanz          ║  ║ ✓ Kapitalwert     ║  │
+│  ║ ✓ Energieausweis      ║  ║ ✓ Scope 1/2/3         ║  ║ ✓ Förderungen     ║  │
+│  ║ ○ Lebenszyklusanalyse ║  ║ ○ Graue Energie       ║  ║ ✓ Sensitivität    ║  │
+│  ╚═══════════════════════╝  ╚═══════════════════════╝  ╚═══════════════════╝  │
+│                                                                                 │
+│  Legende: ✓ = Implementiert (Phase 1-4)  ○ = Geplant (Phase 5-7)               │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 2. Normengrundlage
 
-### 2.1 Deutsche Normen
+### 2.1 Deutsche Normen (DE)
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                        DIN V 18599 - ÜBERSICHT                                 │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  Teil 1: Allgemeine Bilanzierungsverfahren      ──┐                           │
+│  Teil 2: Nutzenergiebedarf Heizen/Kühlen          ├── Grundlagen              │
+│  Teil 10: Nutzungsrandbedingungen               ──┘                           │
+│                                                                                │
+│  Teil 3: Nutzenergiebedarf Beleuchtung          ──┐                           │
+│  Teil 4: Endenergiebedarf Beleuchtung             ├── Beleuchtung             │
+│                                                                                │
+│  Teil 5: Endenergiebedarf Heizsysteme           ──┤                           │
+│  Teil 6: Endenergiebedarf Lüftung, TWW            ├── Anlagentechnik          │
+│  Teil 7: Endenergiebedarf Kühlung                 │                           │
+│  Teil 8: Nutz- und Endenergie TWW               ──┘                           │
+│                                                                                │
+│  Teil 9: End- und Primärenergie KWK/Strom       ── Stromerzeugung            │
+│  Teil 11: Gebäudeautomation                     ── Automation                 │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Norm | Titel | Anwendung | Status |
+|------|-------|-----------|--------|
+| **DIN V 18599** | Energetische Bewertung | Gesamtbilanz | ✓ |
+| **DIN EN 12831** | Heizlastberechnung | Auslegung Heizung | ✓ |
+| **DIN 4108-2** | Mindestwärmeschutz | Sommerl. Wärmeschutz | ✓ |
+| **DIN 4108-3** | Klimabedingter Feuchteschutz | Tauwasser (Glaser) | ✓ |
+| **DIN 4108-6** | Wärmedämmung | Anwendungsnorm | ✓ |
+| **DIN EN ISO 6946** | Wärmedurchlasswiderstand | U-Wert-Berechnung | ✓ |
+| **DIN EN ISO 10077** | Fenster und Türen | Uw-Wert | ✓ |
+| **DIN EN ISO 13370** | Wärmeübertragung | Erdberührte Bauteile | ✓ |
+| **VDI 2078** | Kühllastberechnung | Auslegung Kühlung | ✓ |
+
+### 2.2 Österreichische Normen (AT)
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                     ÖNORM-STRUKTUR FÜR ENERGIEBERECHNUNG                       │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  ÖNORM B 8110 - Wärmeschutz im Hochbau                                        │
+│  ├── Teil 1: Grundlagen                                                       │
+│  ├── Teil 2: Wasserdampfdiffusion und Kondensation                           │
+│  ├── Teil 3: Feuchteschutz                                                    │
+│  ├── Teil 5: Klimamodell und Nutzungsprofile                                 │
+│  └── Teil 6: Heiz- und Kühlenergiebedarf                                     │
+│                                                                                │
+│  ÖNORM H 5050 - Energieausweis-Reihe                                          │
+│  ├── H 5050: Gesamtenergieeffizienz                                          │
+│  ├── H 5055: Energieausweis Wohngebäude                                      │
+│  ├── H 5056: Energieausweis Nichtwohngebäude                                 │
+│  └── H 5057: Primärenergie und CO2                                           │
+│                                                                                │
+│  OIB-Richtlinie 6: Energieeinsparung und Wärmeschutz                         │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Norm | Titel | Anwendung | Status |
+|------|-------|-----------|--------|
+| **ÖNORM B 8110-1** | Wärmeschutz Grundlagen | Mindestanforderungen | ✓ |
+| **ÖNORM B 8110-2** | Wasserdampfdiffusion | Tauwasser | ✓ |
+| **ÖNORM B 8110-6** | Heiz-/Kühlenergiebedarf | Energiebilanz | ✓ |
+| **ÖNORM H 5050** | Gesamtenergieeffizienz | Primärenergie | ✓ |
+| **ÖNORM H 5055** | EA Wohngebäude | Energieausweis | ✓ |
+| **ÖNORM H 5056** | EA Nichtwohngebäude | Energieausweis | ✓ |
+| **ÖNORM H 5057** | CO2-Emissionen | Klimabewertung | ✓ |
+| **OIB-RL 6** | Energieeinsparung | Bauordnung | ✓ |
+
+### 2.3 Europäische Normen (DE & AT)
 
 | Norm | Titel | Anwendung |
 |------|-------|-----------|
-| DIN V 18599-1 | Allgemeine Bilanzierungsverfahren | Grundlage für alle Berechnungen |
-| DIN V 18599-2 | Nutzenergiebedarf für Heizen und Kühlen | Zonenbilanz |
-| DIN V 18599-3 | Nutzenergiebedarf für Beleuchtung | Kunstlicht |
-| DIN V 18599-4 | Nutz- und Endenergie für Beleuchtung | Beleuchtungssysteme |
-| DIN V 18599-5 | Endenergiebedarf Heizsysteme | Wärmeerzeuger |
-| DIN V 18599-6 | Endenergiebedarf Lüftung, TWW | Lüftung & Warmwasser |
-| DIN V 18599-7 | Endenergiebedarf durch Kühlung | Kälteanlagen |
-| DIN V 18599-8 | Nutz- und Endenergie TWW | Trinkwarmwasser |
-| DIN V 18599-9 | End- und Primärenergie Strom | Stromerzeugung KWK |
-| DIN V 18599-10 | Nutzungsrandbedingungen | Nutzungsprofile |
-| DIN V 18599-11 | Gebäudeautomation | Automatisierungsgrad |
-| DIN EN 12831 | Heizlastberechnung | Auslegung Heizung |
-| DIN 4108-2 | Wärmeschutz | Sommerlicher Wärmeschutz |
-| DIN 4108-3 | Feuchteschutz | Tauwasser |
+| **EN ISO 52000-1** | EPB Berechnung Überblick | EPBD Framework |
+| **EN ISO 52003-1** | EPB Indikatoren | Energiekennwerte |
+| **EN ISO 52010-1** | Klimadaten | Außenklima |
+| **EN ISO 52016-1** | Energiebedarf Heizen/Kühlen | Monatsbilanz |
+| **EN ISO 52018-1** | Indikatoren Hülle | Gebäudehülle |
+| **EN 15978** | Nachhaltigkeit Bauwerke | LCA |
+| **EN 15804** | Umweltdeklarationen | EPD |
+| **EN 17037** | Tageslicht | Beleuchtung |
 
-### 2.2 Europäische Normen
+### 2.4 Gesetzliche Grundlagen
 
-| Norm | Titel | Anwendung |
-|------|-------|-----------|
-| EN ISO 52000-1 | EPB Berechnung Überblick | EPBD Framework |
-| EN ISO 52003-1 | EPB Indikatoren | Energiekennwerte |
-| EN ISO 52010-1 | Klimadaten | Außenklima |
-| EN ISO 52016-1 | Energiebedarf Heizen/Kühlen | Monatsbilanz |
-| EN ISO 52018-1 | Indikatoren Hülle | Gebäudehülle |
-
-### 2.3 Gesetzliche Grundlagen
-
+#### Deutschland (DE)
 | Gesetz/Verordnung | Relevanz |
 |-------------------|----------|
-| GEG 2024 | Gebäudeenergiegesetz (Hauptgesetz) |
-| BEG | Bundesförderung effiziente Gebäude |
-| EU-EPBD | Energy Performance of Buildings Directive |
-| EnEV (historisch) | Für Bestandsgebäude relevant |
+| **GEG 2024** | Gebäudeenergiegesetz (Hauptgesetz) |
+| **BEG** | Bundesförderung effiziente Gebäude |
+| **EU-EPBD** | Energy Performance of Buildings Directive |
+| **EnEV** (historisch) | Für Bestandsgebäude relevant |
+
+#### Österreich (AT)
+| Gesetz/Verordnung | Relevanz |
+|-------------------|----------|
+| **OIB-Richtlinie 6** | Bauordnung Energie |
+| **Landesbauordnungen** | Bundeslandspezifisch |
+| **EAVG** | Energieausweis-Vorlage-Gesetz |
+| **BVG Klimaschutz** | Klimaziele 2040 |
 
 ---
 
@@ -400,19 +479,172 @@ A = I_0 × (q^n × (q-1)) / (q^n - 1)
 - Ersatzinvestitionen
 
 #### Fördermittelrechnung
+
 ```
-Programme:
-├── BEG EM (Einzelmaßnahmen)
-│   ├── Gebäudehülle (15%)
-│   ├── Anlagentechnik (20-35%)
-│   └── Heizungsoptimierung (15%)
-├── BEG WG/NWG (Vollsanierung)
-│   ├── Effizienzhaus-Stufen
-│   └── Worst Performing Building Bonus
-└── KfW-Programme
-    ├── Kredite
-    └── Tilgungszuschüsse
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                       FÖRDERPROGRAMME ÜBERSICHT                                │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  DEUTSCHLAND (BEG)                       │  ÖSTERREICH                         │
+│  ═══════════════                         │  ══════════                         │
+│                                          │                                     │
+│  BEG EM (Einzelmaßnahmen)                │  Sanierungsoffensive                │
+│  ├── Gebäudehülle (15%)                  │  ├── Thermische Sanierung (bis 50%)│
+│  ├── Anlagentechnik (20-35%)             │  ├── Heizungstausch (bis 75%)      │
+│  └── Heizungsoptimierung (15%)           │  └── Photovoltaik (bis 285€/kWp)   │
+│                                          │                                     │
+│  BEG WG/NWG (Vollsanierung)              │  Landesförderungen                  │
+│  ├── Effizienzhaus 85 (5%)               │  ├── Bundeslandspezifisch          │
+│  ├── Effizienzhaus 70 (10%)              │  └── Gemeindezuschüsse             │
+│  ├── Effizienzhaus 55 (15%)              │                                     │
+│  ├── Effizienzhaus 40 (20%)              │  EU-Förderungen                     │
+│  └── WPB-Bonus (+10%)                    │  └── Aufbau- und Resilienzplan     │
+│                                          │                                     │
+│  KfW-Programme                           │  Umweltförderung (UFI)              │
+│  ├── Kredite                             │  ├── Gewerbliche Objekte           │
+│  └── Tilgungszuschüsse                   │  └── Contracting-Modelle           │
+│                                          │                                     │
+└────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+### 3.8 Tauwasserschutz (Glaser-Verfahren)
+
+**Norm:** DIN 4108-3 / ÖNORM B 8110-2
+
+```
+Tauwassermenge:
+m_c = Σ(g_c,i × Δt_i)
+
+Verdunstungsmenge:
+m_ev = Σ(g_ev,i × Δt_i)
+
+Kriterium:
+m_c - m_ev ≤ m_zul (zulässige Tauwassermenge)
+
+m_zul = {
+  0.5 kg/m² für kapillaraktive Schichten
+  1.0 kg/m² für nicht kapillaraktive Schichten
+}
+```
+
+**Eingabeparameter:**
+- Schichtaufbau mit sd-Werten
+- Innenklima (Temperatur, Feuchte)
+- Außenklima (Monatsmittelwerte)
+- Randbedingungen nach Bauteiltyp
+
+**Ausgabe:**
+- Temperaturverlauf im Bauteil
+- Sättigungsdampfdruck-Verlauf
+- Tauwasserebenen und -mengen
+- Grafische Darstellung (Glaser-Diagramm)
+- Nachweis bestanden/nicht bestanden
+
+---
+
+### 3.9 Sommerlicher Wärmeschutz
+
+**Norm:** DIN 4108-2:2013-02
+
+```
+Sonneneintragskennwert (vereinfacht):
+S = Σ(A_w,j × g_tot,j × F_c,j) / A_G
+
+Nachweis bestanden wenn:
+S_vorh ≤ S_zul (abhängig von Klimaregion und Bauweise)
+
+Genaueres Verfahren (Simulation):
+- Operative Übertemperaturgradstunden
+- Θ_op,max ≤ 27°C (Wohngebäude)
+```
+
+**Klimaregionen Deutschland:**
+| Region | Kennzeichen | S_zul (leicht) |
+|--------|-------------|----------------|
+| A | Sommerkühl | 0.113 |
+| B | Gemäßigt | 0.080 |
+| C | Sommerheiß | 0.058 |
+
+**Eingabeparameter:**
+- Verglasungsflächen (Orientierung, Neigung)
+- g-Werte und Sonnenschutz (Fc)
+- Nettogrundfläche
+- Bauweise (leicht/schwer)
+- Nachtlüftung (ja/nein)
+
+---
+
+### 3.10 Lebenszyklusanalyse (LCA)
+
+**Norm:** EN 15978, EN 15804
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                    LEBENSZYKLUSPHASEN NACH EN 15978                            │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  PRODUKT        BAU          NUTZUNG              ENTSORGUNG    VORTEILE      │
+│  A1-A3          A4-A5        B1-B7                C1-C4         D             │
+│  ────────       ─────        ─────                ──────        ────────      │
+│  Rohstoffe      Transport    Nutzung              Rückbau       Recycling     │
+│  Produktion     Einbau       Instandhaltung       Transport     Wiederverw.   │
+│  Transport                   Reparatur            Abfallbeh.    Energie       │
+│                              Ersatz               Entsorgung                   │
+│                              Umbau                                             │
+│                              ENERGIE (B6)                                      │
+│                              WASSER (B7)                                       │
+│                                                                                │
+│  ◄─────────────────── GRAUE ENERGIE ──────────────────►                       │
+│                       ◄──── BETRIEBSENERGIE ────►                             │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Berechnete Indikatoren:**
+| Indikator | Einheit | Beschreibung |
+|-----------|---------|--------------|
+| GWP | kg CO2-eq | Treibhauspotenzial |
+| ODP | kg CFC-11-eq | Ozonabbaupotenzial |
+| AP | kg SO2-eq | Versauerungspotenzial |
+| EP | kg PO4-eq | Eutrophierungspotenzial |
+| PENRT | MJ | Primärenergie nicht-erneuerbar |
+| PERT | MJ | Primärenergie erneuerbar |
+
+**Datenquellen:**
+- Ökobaudat (Deutschland)
+- baubook (Österreich)
+- EPD-Datenbanken
+- Generische Datensätze
+
+---
+
+### 3.11 Tageslichtberechnung
+
+**Norm:** EN 17037
+
+```
+Tageslichtquotient:
+D = (E_i / E_a) × 100 [%]
+
+Wo:
+  E_i = Beleuchtungsstärke innen [lux]
+  E_a = Beleuchtungsstärke außen (Diffusstrahlung) [lux]
+
+Mindestanforderungen EN 17037:
+- Minimum: D ≥ 2.0% auf 50% der Nutzfläche
+- Mittel:   D ≥ 3.0% auf 50% der Nutzfläche
+- Hoch:    D ≥ 5.0% auf 50% der Nutzfläche
+```
+
+**Einflussfaktoren:**
+- Fensterfläche und -position
+- Verglasungstransmission (τv)
+- Rahmenfaktor
+- Verschattung (Umgebung, Überhänge)
+- Raumgeometrie und -reflexion
+- Himmelstyp (bedeckt nach CIE)
 
 ---
 
@@ -613,5 +845,5 @@ Prüfungen:
 
 ---
 
-*Letzte Aktualisierung: 2025-11-25*
-*Version: 0.1.0*
+*Letzte Aktualisierung: 2025-11-26*
+*Version: 2.0.0*
