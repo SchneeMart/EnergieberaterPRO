@@ -1,7 +1,7 @@
 # Normen-Referenz für Energieberechnungen
 
-**Version:** 1.0.0
-**Stand:** 2025-01-15
+**Version:** 1.1.0
+**Stand:** 2025-11-26 (Recherchiert)
 **Zielländer:** Österreich (AT) 🇦🇹, Deutschland (DE) 🇩🇪
 
 ---
@@ -54,11 +54,35 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 Wichtige Hinweise
+### 1.2 Aktuelle Normenversionen (Stand November 2025)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  WICHTIGE AKTUELLE VERSIONEN (recherchiert November 2025)                        │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  ÖSTERREICH:                                                                     │
+│  • OIB-Richtlinie 6:       2023 (gültig) → 2025 in Vorbereitung!               │
+│    └─ OIB-RL 6 2025: 326 Stellungnahmen bearbeitet, Umsetzung bis Mai 2026     │
+│  • ÖNORM H 5056-1:         2024-03-01 (aktuell)                                 │
+│  • ÖNORM H 5055:           2011-11-01                                           │
+│  • ÖNORM H 5050:           2014                                                 │
+│                                                                                  │
+│  DEUTSCHLAND:                                                                    │
+│  • GEG:                    2024 (gültig) - EPBD-Umsetzung bis Mai 2026 nötig    │
+│  • DIN V 18599:            2018-09 (unverändert, aber Pflicht für alle Gebäude) │
+│  • DIN EN 16247-1:         2022 (aktualisiert, ISO 50001 angepasst)             │
+│  • DIN EN ISO 50001:       2018                                                 │
+│  • VDI 4650 Blatt 1:       + Ergänzung VDI-EE 4650 Blatt 1.1 (Oktober 2023)    │
+│  • VDI 2078:               2015 (mit TRY 2017 Klimadaten)                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.3 Wichtige Hinweise
 
 - **Öffentlich verfügbare Informationen:** Diese Referenz listet Normen-Bezeichnungen und deren Anwendungsbereiche
 - **Normen-Bezug:** Volltext über Austrian Standards (AT) bzw. Beuth Verlag (DE)
 - **Kostenlose Quellen:** OIB-Richtlinien, GEG-Volltext, EU-Verordnungen sind frei verfügbar
+- **EPBD 2024:** EU-Gebäuderichtlinie erfordert Umsetzung in DE/AT bis Mai 2026
 
 ---
 
@@ -68,7 +92,8 @@
 
 | Norm/Richtlinie | Titel | Anwendung |
 |-----------------|-------|-----------|
-| **OIB-Richtlinie 6** | Energieeinsparung und Wärmeschutz | Zentrales Dokument für Energieausweis AT |
+| **OIB-Richtlinie 6 (2023)** | Energieeinsparung und Wärmeschutz | Zentrales Dokument für Energieausweis AT |
+| **OIB-Richtlinie 6 (2025)** | *In Vorbereitung* - Umsetzung EPBD | Ab Mai 2026 in Landesrecht |
 | **OIB-Leitfaden** | Energietechnisches Verhalten von Gebäuden | Berechnungsmethodik |
 | ÖNORM B 8110-1 | Wärmeschutz im Hochbau - Teil 1: Anforderungen | U-Wert-Anforderungen |
 | ÖNORM B 8110-2 | Wärmeschutz im Hochbau - Teil 2: Wasserdampfdiffusion | Feuchteschutz |
@@ -77,7 +102,7 @@
 | ÖNORM B 8110-6 | Wärmeschutz im Hochbau - Teil 6: Heizwärmebedarf | HWB-Berechnung |
 | ÖNORM H 5050 | Gesamtenergieeffizienz von Gebäuden - Berechnung | Endenergiebedarf |
 | ÖNORM H 5055 | Gesamtenergieeffizienz - Begleitende Dokumente | Energieausweis-Format |
-| ÖNORM H 5056 | Gesamtenergieeffizienz - Heiztechnikenergiebedarf | Heizung |
+| ÖNORM H 5056-1 (2024-03) | Gesamtenergieeffizienz - Heiztechnikenergiebedarf | Heizung (aktuell!) |
 | ÖNORM H 5057 | Gesamtenergieeffizienz - Raumlufttechnikenergiebedarf | RLT |
 | ÖNORM H 5058 | Gesamtenergieeffizienz - Kühlenergiebedarf | Kühlung |
 | ÖNORM H 5059 | Gesamtenergieeffizienz - Beleuchtungsenergiebedarf | Beleuchtung (Nicht-Wohnbau) |
@@ -190,6 +215,7 @@
 | VDI 4640 | Thermische Nutzung des Untergrunds | Geothermie |
 | VDI 4645 | Planung und Dimensionierung Wärmepumpen | Wärmepumpen |
 | VDI 4650-1 | Berechnung Wärmepumpen - Kurzverfahren | WP-JAZ |
+| **VDI-EE 4650 Bl. 1.1 (2023)** | Ergänzung: Vorlauftemperaturen bis 60°C | WP-JAZ (aktuell!) |
 
 ---
 
@@ -382,9 +408,15 @@
 | Norm/Gesetz | Titel | Anwendung |
 |-------------|-------|-----------|
 | **EDL-G** | Energiedienstleistungsgesetz | Gesetzliche Pflicht |
-| DIN EN 16247-1 bis -5 | Energieaudits | Durchführung |
+| **EnEfG (2023)** | Energieeffizienzgesetz | Erweiterte Pflichten! |
+| DIN EN 16247-1 (2022) | Energieaudits - Allgemein | Durchführung (aktualisiert!) |
+| DIN EN 16247-2 bis -5 | Energieaudits - Spezifisch | Gebäude/Prozess/Transport |
 | DIN EN ISO 50002 | Energieaudits - Anforderungen | Audit-Standard |
 | **BAFA-Merkblätter** | Merkblätter Energieaudits | Praxis-Hilfe (kostenlos) |
+
+**EnEfG-Pflichten (Stand 2025):**
+- Unternehmen > 2,5 GWh/Jahr: Energieaudit-Pflicht
+- Unternehmen > 7,5 GWh/Jahr: EnMS (ISO 50001/EMAS) Pflicht seit Juli 2025
 
 ---
 
@@ -536,7 +568,19 @@
 | Version | Datum | Änderungen |
 |---------|-------|------------|
 | 1.0.0 | 2025-01-15 | Initiale Version |
+| 1.1.0 | 2025-11-26 | Web-Recherche: OIB-RL 6 2025, ÖNORM H 5056-1:2024, VDI-EE 4650, EnEfG |
 
 ---
 
 **Hinweis:** Diese Übersicht dient als Referenz für die benötigten Normen. Die Normentexte selbst müssen bei Austrian Standards (AT) bzw. Beuth Verlag (DE) bezogen werden. Gesetze (GEG, EEffG, OIB-Richtlinien) und behördliche Leitfäden sind kostenlos online verfügbar.
+
+---
+
+## Anhang C: Quellen (Recherche November 2025)
+
+- [OIB-Richtlinien 2025](https://www.oib.or.at/kernaufgaben/oib-richtlinien/richtlinien/oib-richtlinien-2025/) - Status OIB-RL 6 2025
+- [GEG 2024/2025](https://www.gesetze-im-internet.de/geg/) - Offizieller Gesetzestext
+- [Austrian Standards](https://www.austrian-standards.at) - ÖNORM H 5056-1:2024
+- [VDI Richtlinien](https://www.vdi.de/richtlinien) - VDI 2078, VDI 4650
+- [BAFA Energieaudit](https://www.bafa.de) - EnEfG-Merkblätter
+- [DIN Media](https://www.dinmedia.de) - DIN V 18599 Informationen
