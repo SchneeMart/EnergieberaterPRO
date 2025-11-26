@@ -84,7 +84,8 @@ Eine allumfassende, wissenschaftlich fundierte **SaaS-Webanwendung** für profes
 │  │  Tesseract OCR     │  │  │  Prometheus + Grafana                          │  │
 │  │  ChromaDB          │  │  │  Loki (Logging)                                │  │
 │  │  sentence-transf.  │  │  │  MinIO (S3-kompatibel)                         │  │
-│  └────────────────────┘  │  └────────────────────────────────────────────────┘  │
+│  └────────────────────┘  │  │  Collabora CODE (WOPI)                         │  │
+│                          │  └────────────────────────────────────────────────┘  │
 └──────────────────────────┴──────────────────────────────────────────────────────┘
 ```
 
@@ -138,6 +139,14 @@ Monitoring:     Prometheus + Grafana
 Logging:        Loki + Promtail
 Backup:         restic + MinIO
 CI/CD:          GitHub Actions / GitLab CI
+```
+
+### 3.6 Dokumenten-Kollaboration (WOPI)
+```
+Office-Server:  Collabora Online Development Edition (CODE)
+WOPI-Protokoll: /api/wopi/files/{file_id} (CheckFileInfo, GetFile, PutFile)
+Dateitypen:     .xlsx, .docx, .odt, .ods (Live-Bearbeitung im Browser)
+Integration:    IFrame-Einbettung im Frontend
 ```
 
 ---
@@ -297,6 +306,39 @@ Geschäft (Organisation → Endkunde)
 
 **Länderunterstützung:** Jede Organisation hat ein `country`-Feld (DE/AT) das die anzuwendenden Normen bestimmt.
 
+### 6.2 Projekttypen
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           PROJEKTTYPEN                                           │
+├────────────────────────────────────┬────────────────────────────────────────────┤
+│        A. NORM-PROJEKTE            │           B. FLEX-PROJEKTE                 │
+│  ┌──────────────────────────────┐  │  ┌──────────────────────────────────────┐  │
+│  │  • Starr, geführter Ablauf   │  │  │  • Frei gestaltbare Struktur         │  │
+│  │  • Wizard-basiert im UI      │  │  │  • Template-Editor für Checklisten   │  │
+│  │  │                            │  │  │  • Eigene Ordnerstrukturen           │  │
+│  │  Beispiele:                   │  │  │                                      │  │
+│  │  - Energieausweis AT (ÖNORM) │  │  │  Beispiele:                          │  │
+│  │  - Energieausweis DE (GEG)   │  │  │  - Individuelle Sanierungskonzepte   │  │
+│  │  - iSFP                       │  │  │  - Kundenspezifische Audits         │  │
+│  │  - BAFA-Audit                 │  │  │  - Freie Beratungsprojekte          │  │
+│  └──────────────────────────────┘  │  └──────────────────────────────────────┘  │
+└────────────────────────────────────┴────────────────────────────────────────────┘
+```
+
+**Datenmodell-Erweiterung:**
+```python
+class ProjectType(str, Enum):
+    NORM = "norm"      # Geführt, Wizard-basiert, feste Struktur
+    FLEX = "flex"      # Frei, Template-Editor, eigene Struktur
+
+class Project(Base):
+    # ... bestehende Felder ...
+    project_type: ProjectType = ProjectType.NORM
+    norm_template_id: Optional[UUID]  # Nur für NORM-Projekte
+    flex_template_id: Optional[UUID]  # Nur für FLEX-Projekte (eigene Vorlage)
+```
+
 ---
 
 ## 7. Entwicklungsphasen
@@ -316,11 +358,25 @@ Geschäft (Organisation → Endkunde)
 ```
 
 ### Phase 1: Fundament
-- [ ] Docker-Umgebung mit allen Services aufsetzen
+
+**⚠️ PRIORISIERUNG ÖSTERREICH:**
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  ÖSTERREICH-FIRST STRATEGIE (Phase 1)                                           │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  • Default-Konfiguration: country='AT'                                          │
+│  • Normen-Implementierung: OIB-Richtlinie 6 + ÖNORM H 5050 VOR DIN-Normen      │
+│  • Validatoren (calculations/validators.py): Primär österreichische Grenzwerte │
+│  • Später: Deutsche DIN-Normen als Erweiterung nachrüsten                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- [ ] Docker-Umgebung mit allen Services aufsetzen (inkl. Collabora CODE)
 - [ ] PostgreSQL mit Row-Level-Security konfigurieren
 - [ ] Authentifizierung (JWT, MFA, RBAC) implementieren
 - [ ] Grundlegendes UI-Framework (Alpine.js, Tailwind CSS)
 - [ ] Design-System und Komponenten-Bibliothek
+- [ ] ÖNORM-Validatoren mit österreichischen Grenzwerten
 
 ### Phase 2: Kernfunktionen
 - [ ] Multi-Tenant Organisations- und Benutzerverwaltung
@@ -438,4 +494,4 @@ Geschäft (Organisation → Endkunde)
 ---
 
 *Letzte Aktualisierung: 2025-11-26*
-*Version: 2.0.0*
+*Version: 2.1.0*

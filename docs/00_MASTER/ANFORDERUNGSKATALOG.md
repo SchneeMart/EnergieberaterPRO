@@ -14,6 +14,18 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 - Höchste Sicherheitsstandards erfüllt
 - Vollständig Open Source ist
 
+**⚠️ PRIORISIERUNG ÖSTERREICH (Phase 1):**
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  ÖSTERREICH-FIRST STRATEGIE                                                     │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  • Default-Konfiguration: country='AT'                                          │
+│  • Normen-Implementierung: OIB-Richtlinie 6 + ÖNORM H 5050 VOR DIN-Normen      │
+│  • Validatoren primär für österreichische Grenzwerte                           │
+│  • Deutsche DIN-Normen werden später als Erweiterung nachgerüstet              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
 ### 1.2 Benutzer-Hierarchie (SaaS-Modell)
 
 **Referenz:** Siehe `03_FRONTEND/TERMINOLOGIE_KORREKTUR.md` für Details.
@@ -112,7 +124,34 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 | PRJ-005 | Multi-Standort-Projekte | MITTEL |
 | PRJ-006 | Projektduplizierung und -vorlagen | HOCH |
 
-#### 2.2.2 Intelligente Projektvorlagen
+#### 2.2.2 Projekttyp-Kategorien (Norm vs. Flex)
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  A. NORM-PROJEKTE                    │  B. FLEX-PROJEKTE                       │
+│  ══════════════════                  │  ══════════════════                     │
+│  • Starr, geführter Ablauf           │  • Frei gestaltbare Struktur            │
+│  • Wizard-basiert im Frontend        │  • Template-Editor für Checklisten      │
+│  • Validierung nach Norm-Vorgaben    │  • Eigene Ordnerstrukturen              │
+│                                      │                                         │
+│  Beispiele:                          │  Beispiele:                             │
+│  - Energieausweis AT (ÖNORM H 5055)  │  - Individuelle Sanierungskonzepte      │
+│  - Energieausweis DE (GEG 2024)      │  - Kundenspezifische Audits             │
+│  - iSFP (BAFA)                       │  - Freie Beratungsprojekte              │
+│  - BAFA-Energieaudit                 │  - Machbarkeitsstudien                  │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| PRJ-010 | Explizite Unterscheidung Norm-/Flex-Projekte im Datenmodell | KRITISCH |
+| PRJ-011 | Wizard-UI für Norm-Projekte mit Pflichtschritten | HOCH |
+| PRJ-012 | Template-Editor für Flex-Projekte (eigene Checklisten) | HOCH |
+| PRJ-013 | Vordefinierte Norm-Vorlagen (AT: ÖNORM, DE: GEG) | KRITISCH |
+| PRJ-014 | Freie Ordnerstruktur für Flex-Projekte | MITTEL |
+| PRJ-015 | Umschaltung Norm↔Flex bei Projektanlage | HOCH |
+
+#### 2.2.3 Intelligente Projektvorlagen
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
 | TPL-001 | Modulare Vorlagenbausteine | HOCH |
@@ -335,14 +374,48 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 | DOC-003 | Versionierung | HOCH |
 | DOC-004 | Kommentare und Annotationen | MITTEL |
 
-#### 2.8.2 Kommunikation
+#### 2.8.2 Office-Integration (WOPI/Collabora)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  COLLABORA ONLINE INTEGRATION (WOPI-Protokoll)                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  ┌─────────────┐    WOPI-API     ┌─────────────────────────────────────────────┐│
+│  │   Backend   │◄───────────────►│  Collabora Online Development Edition      ││
+│  │  (FastAPI)  │                 │  (CODE Docker Container)                   ││
+│  └─────────────┘                 └─────────────────────────────────────────────┘│
+│        │                                        │                               │
+│        │                                        │                               │
+│        ▼                                        ▼                               │
+│  /api/wopi/files/{file_id}              IFrame im Frontend                      │
+│  - CheckFileInfo                        - Live-Bearbeitung .xlsx/.docx         │
+│  - GetFile                              - Multi-User-Editing                   │
+│  - PutFile                              - Änderungen sofort gespeichert        │
+│  - Lock/Unlock                                                                  │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| WOPI-001 | Collabora CODE Container im Docker-Stack | HOCH |
+| WOPI-002 | WOPI-Endpoints im Backend (/api/wopi/...) | HOCH |
+| WOPI-003 | CheckFileInfo, GetFile, PutFile Implementierung | HOCH |
+| WOPI-004 | File-Locking für gleichzeitige Bearbeitung | HOCH |
+| WOPI-005 | IFrame-Einbettung im Frontend | HOCH |
+| WOPI-006 | Unterstützte Formate: .xlsx, .docx, .odt, .ods | HOCH |
+| WOPI-007 | Automatisches Speichern bei Änderungen | MITTEL |
+| WOPI-008 | Bearbeitungshistorie und Versionen | MITTEL |
+
+#### 2.8.3 Kommunikation
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
 | MSG-001 | Interne Nachrichten | MITTEL |
 | MSG-002 | Gruppenchats/Kanäle | NIEDRIG |
 | MSG-003 | @-Erwähnungen | NIEDRIG |
 
-#### 2.8.3 Kalender
+#### 2.8.4 Kalender
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
 | KAL-001 | Kalenderintegration (CalDAV) | MITTEL |
@@ -492,10 +565,11 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 
 ---
 
-### 2.17 Endkunden-Portal
+### 2.17 Endkunden-Portal & Public Links
 
 ⚠️ **Hinweis:** Endkunden haben weiterhin KEINEN vollständigen Login! Das Portal ist ein eingeschränkter Zugang.
 
+#### 2.17.1 Basis-Portal
 | ID | Anforderung | Priorität |
 |----|-------------|-----------|
 | EKP-001 | Einmaliger Link-Zugang (Token-basiert) | MITTEL |
@@ -504,6 +578,47 @@ EnergieberaterPRO ist eine **allumfassende, wissenschaftlich fundierte SaaS-Weba
 | EKP-004 | Dokumenten-Upload (Rechnungen, Fotos) | MITTEL |
 | EKP-005 | Nachrichten an Berater | NIEDRIG |
 | EKP-006 | Digitale Auftragsannahme | MITTEL |
+
+#### 2.17.2 Datenerhebungs-Links (Public Links)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  DATENERHEBUNGS-LINKS (Für Endkunden ohne Login)                                │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  Komponente: "Datenerhebungs-Link generieren"                                   │
+│                                                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  Konfigurationsoptionen:                                                 │    │
+│  │                                                                          │    │
+│  │  ○ Modus A: "Nur Upload"                                                 │    │
+│  │     - Endkunde kann Dateien hochladen (Fotos, Rechnungen, Pläne)        │    │
+│  │     - Keine Bearbeitung bestehender Dokumente                           │    │
+│  │                                                                          │    │
+│  │  ○ Modus B: "Bearbeitung erlaubt" (via Collabora)                        │    │
+│  │     - Endkunde kann .xlsx-Checklisten direkt im Browser ausfüllen       │    │
+│  │     - Live-Bearbeitung via Collabora/WOPI                               │    │
+│  │     - Änderungen werden automatisch gespeichert                         │    │
+│  │                                                                          │    │
+│  │  Optionen:                                                               │    │
+│  │  [x] Gültigkeit (1 Tag / 7 Tage / 30 Tage / Unbegrenzt)                │    │
+│  │  [x] Passwortschutz optional                                            │    │
+│  │  [x] E-Mail-Benachrichtigung bei Änderungen                             │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| ID | Anforderung | Priorität |
+|----|-------------|-----------|
+| PUB-001 | Komponente "Datenerhebungs-Link generieren" | HOCH |
+| PUB-002 | Modus "Nur Upload" (Dateien hochladen) | HOCH |
+| PUB-003 | Modus "Bearbeitung erlaubt" (via Collabora) | HOCH |
+| PUB-004 | Konfigurierbare Gültigkeitsdauer | MITTEL |
+| PUB-005 | Optionaler Passwortschutz für Links | MITTEL |
+| PUB-006 | E-Mail-Benachrichtigung bei Aktivität | MITTEL |
+| PUB-007 | Link-Verwaltung (Übersicht, Deaktivieren) | MITTEL |
+| PUB-008 | Audit-Log für Public-Link-Zugriffe | HOCH |
 
 ---
 
@@ -656,4 +771,4 @@ Enterprise:
 ---
 
 *Letzte Aktualisierung: 2025-11-26*
-*Version: 3.0.0*
+*Version: 3.1.0*

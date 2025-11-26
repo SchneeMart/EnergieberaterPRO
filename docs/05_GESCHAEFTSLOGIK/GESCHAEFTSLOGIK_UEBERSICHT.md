@@ -156,7 +156,76 @@ class CustomerService:
 | monitoring | Energiemonitoring | Laufend |
 | consulting | Allgemeine Beratung | Variabel |
 
-### 3.2 Projektstatus-Workflow
+### 3.2 Projekttyp-Kategorien (Norm vs. Flex)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      PROJEKTTYP-KATEGORIEN                                       │
+├──────────────────────────────────┬──────────────────────────────────────────────┤
+│      A. NORM-PROJEKTE            │           B. FLEX-PROJEKTE                   │
+├──────────────────────────────────┼──────────────────────────────────────────────┤
+│  • Starr, geführter Ablauf       │  • Frei gestaltbare Struktur                 │
+│  • Wizard-basiert im Frontend    │  • Template-Editor für eigene Checklisten    │
+│  • Validierung nach Norm-Vorgabe │  • Eigene Ordnerstrukturen möglich           │
+│  • Pflichtfelder & Schritte      │  • Keine Pflicht-Schritte                    │
+│                                  │                                              │
+│  Beispiele:                      │  Beispiele:                                  │
+│  ├── Energieausweis AT (ÖNORM)   │  ├── Individuelle Sanierungskonzepte         │
+│  ├── Energieausweis DE (GEG)     │  ├── Kundenspezifische Audits                │
+│  ├── iSFP (BAFA)                 │  ├── Freie Beratungsprojekte                 │
+│  └── BAFA-Energieaudit           │  └── Machbarkeitsstudien                     │
+└──────────────────────────────────┴──────────────────────────────────────────────┘
+```
+
+```python
+# models/project.py
+class ProjectCategory(str, Enum):
+    NORM = "norm"      # Geführt, Wizard-basiert, feste Struktur
+    FLEX = "flex"      # Frei, Template-Editor, eigene Struktur
+
+class Project(Base):
+    # ... bestehende Felder ...
+
+    # Projekttyp-Kategorie
+    category: ProjectCategory = ProjectCategory.NORM
+
+    # Für NORM-Projekte: Vordefinierte Norm-Vorlage
+    norm_template_id: Optional[UUID] = None  # z.B. "energieausweis_at_wg"
+
+    # Für FLEX-Projekte: Eigene Vorlage aus Template-Editor
+    flex_template_id: Optional[UUID] = None
+
+# Vordefinierte Norm-Vorlagen
+NORM_TEMPLATES = {
+    "energieausweis_at_wg": {
+        "name": "Energieausweis Wohngebäude (ÖNORM H 5055)",
+        "country": "AT",
+        "steps": [
+            "gebaeude_stammdaten",
+            "bauteile_erfassung",
+            "anlagen_erfassung",
+            "berechnung",
+            "ausweis_generierung"
+        ],
+        "required_fields": ["hwb", "peb", "co2"],
+        "output": "energieausweis_pdf"
+    },
+    "energieausweis_de_wg": {
+        "name": "Energieausweis Wohngebäude (GEG 2024)",
+        "country": "DE",
+        "steps": ["..."],
+        "required_fields": ["..."],
+        "output": "energieausweis_pdf"
+    },
+    "isfp_de": {
+        "name": "Individueller Sanierungsfahrplan (BAFA)",
+        "country": "DE",
+        "steps": ["..."]
+    }
+}
+```
+
+### 3.3 Projektstatus-Workflow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -189,7 +258,7 @@ class CustomerService:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.3 Projektstruktur
+### 3.4 Projektstruktur
 
 ```python
 # Projekt mit Unterstruktur
@@ -1282,7 +1351,7 @@ workflows:
 
 ---
 
-## 12. Endkunden-Portal
+## 12. Endkunden-Portal & Public Links
 
 ### 12.1 Portal-Konzept
 
@@ -1324,7 +1393,255 @@ workflows:
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 12.2 Token-basierter Zugang
+### 12.2 Datenerhebungs-Links (Public Links)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│            KOMPONENTE: "DATENERHEBUNGS-LINK GENERIEREN"                         │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │  Neuen Datenerhebungs-Link erstellen                                    │   │
+│  │  ═════════════════════════════════════                                  │   │
+│  │                                                                         │   │
+│  │  Modus:                                                                 │   │
+│  │  ┌─────────────────────────────────────────────────────────────────┐   │   │
+│  │  │  ○ Modus A: "Nur Upload"                                        │   │   │
+│  │  │    └─ Endkunde kann Dateien hochladen (Fotos, Rechnungen, Pläne)│   │   │
+│  │  │    └─ Keine Bearbeitung bestehender Dokumente                   │   │   │
+│  │  │                                                                 │   │   │
+│  │  │  ○ Modus B: "Bearbeitung erlaubt" (via Collabora/WOPI)         │   │   │
+│  │  │    └─ Endkunde kann .xlsx-Checklisten direkt im Browser füllen │   │   │
+│  │  │    └─ Live-Bearbeitung via Collabora Online                     │   │   │
+│  │  │    └─ Änderungen werden automatisch gespeichert                 │   │   │
+│  │  └─────────────────────────────────────────────────────────────────┘   │   │
+│  │                                                                         │   │
+│  │  Gültigkeit:  [▼ 30 Tage          ]                                    │   │
+│  │               (1 Tag / 7 Tage / 30 Tage / Unbegrenzt)                  │   │
+│  │                                                                         │   │
+│  │  Optionen:                                                              │   │
+│  │  [x] Passwortschutz aktivieren    Passwort: [______________]           │   │
+│  │  [x] E-Mail-Benachrichtigung bei Upload/Änderung                       │   │
+│  │  [ ] Mehrfache Nutzung erlauben (Single-Use Link)                      │   │
+│  │                                                                         │   │
+│  │  Dokumente für Bearbeitung freigeben (Modus B):                        │   │
+│  │  [x] Gebäudedaten_Checkliste.xlsx                                      │   │
+│  │  [x] Energierechnungen_Template.xlsx                                    │   │
+│  │  [ ] Anlagenerfassung.xlsx                                              │   │
+│  │                                                                         │   │
+│  │                              [Link generieren]                          │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+│  Generierter Link:                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │  https://app.energieberaterpro.de/portal/d8f3k2...                     │   │
+│  │  [Kopieren] [Per E-Mail senden] [QR-Code anzeigen]                     │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+```python
+# services/public_link.py
+class PublicLinkService:
+    """
+    Service für Datenerhebungs-Links (Public Links)
+    """
+
+    class LinkMode(str, Enum):
+        UPLOAD_ONLY = "upload_only"      # Modus A: Nur Upload
+        EDIT_ALLOWED = "edit_allowed"    # Modus B: Bearbeitung via Collabora
+
+    async def generate_data_collection_link(
+        self,
+        project_id: UUID,
+        mode: LinkMode,
+        valid_days: int = 30,
+        password: Optional[str] = None,
+        notify_on_activity: bool = True,
+        shared_documents: list[UUID] = None,  # Für EDIT_ALLOWED Modus
+        single_use: bool = False
+    ) -> PublicLink:
+        """Generiert Datenerhebungs-Link"""
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.utcnow() + timedelta(days=valid_days) if valid_days else None
+
+        link = PublicLink(
+            token=token,
+            project_id=project_id,
+            mode=mode,
+            expires_at=expires_at,
+            password_hash=self._hash_password(password) if password else None,
+            notify_on_activity=notify_on_activity,
+            shared_document_ids=shared_documents or [],
+            single_use=single_use,
+            access_count=0
+        )
+
+        await self.repository.create(link)
+
+        return link
+
+    async def access_link(
+        self,
+        token: str,
+        password: Optional[str] = None
+    ) -> PublicLinkAccess:
+        """Validiert und gibt Zugang zum Link"""
+        link = await self.repository.get_by_token(token)
+
+        if not link:
+            raise LinkNotFound()
+
+        if link.expires_at and link.expires_at < datetime.utcnow():
+            raise LinkExpired()
+
+        if link.single_use and link.access_count > 0:
+            raise LinkAlreadyUsed()
+
+        if link.password_hash and not self._verify_password(password, link.password_hash):
+            raise InvalidPassword()
+
+        # Zugriff protokollieren
+        link.access_count += 1
+        link.last_access_at = datetime.utcnow()
+        await self.repository.update(link)
+
+        # Benachrichtigung senden
+        if link.notify_on_activity:
+            await self._notify_project_owner(link, "access")
+
+        return PublicLinkAccess(
+            project_id=link.project_id,
+            mode=link.mode,
+            can_upload=True,
+            can_edit=link.mode == LinkMode.EDIT_ALLOWED,
+            shared_documents=link.shared_document_ids
+        )
+
+    async def get_collabora_url(
+        self,
+        token: str,
+        document_id: UUID
+    ) -> str:
+        """Generiert Collabora IFrame URL für Dokument-Bearbeitung"""
+        link = await self.repository.get_by_token(token)
+
+        if link.mode != LinkMode.EDIT_ALLOWED:
+            raise EditNotAllowed()
+
+        if document_id not in link.shared_document_ids:
+            raise DocumentNotShared()
+
+        # WOPI URL generieren
+        wopi_src = f"{self.base_url}/api/wopi/files/{document_id}?access_token={token}"
+        collabora_url = f"{self.collabora_url}/browser/dist/cool.html?WOPISrc={quote(wopi_src)}"
+
+        return collabora_url
+```
+
+### 12.3 WOPI-Integration für Public Links
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                COLLABORA/WOPI INTEGRATION FÜR PUBLIC LINKS                       │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌─────────────┐                    ┌──────────────────────────────────────┐   │
+│  │  Endkunde   │                    │  Collabora Online (CODE Container)  │   │
+│  │  (Browser)  │                    │                                      │   │
+│  └──────┬──────┘                    └──────────────────┬───────────────────┘   │
+│         │                                              │                        │
+│         │ 1. Öffnet Link                               │                        │
+│         ▼                                              │                        │
+│  ┌──────────────────────────────────────────────┐     │                        │
+│  │  Frontend: Public Link Portal                 │     │                        │
+│  │  ┌──────────────────────────────────────────┐│     │                        │
+│  │  │ IFrame mit Collabora                      ││     │                        │
+│  │  │                                          ││◄────┘                        │
+│  │  │  ┌──────────────────────────────────┐   ││                               │
+│  │  │  │ Checkliste.xlsx                   │   ││                               │
+│  │  │  │ Live-Bearbeitung im Browser      │   ││                               │
+│  │  │  └──────────────────────────────────┘   ││                               │
+│  │  └──────────────────────────────────────────┘│                               │
+│  └──────────────────────────────────────────────┘                               │
+│         │                                                                       │
+│         │ 2. Collabora lädt/speichert via WOPI                                 │
+│         ▼                                                                       │
+│  ┌──────────────────────────────────────────────┐                               │
+│  │  Backend: WOPI Endpoints                      │                               │
+│  │  /api/wopi/files/{file_id}                   │                               │
+│  │                                               │                               │
+│  │  • CheckFileInfo - Dateiinfos abrufen        │                               │
+│  │  • GetFile - Datei laden                      │                               │
+│  │  • PutFile - Änderungen speichern            │                               │
+│  │  • Lock/Unlock - Concurrent Editing           │                               │
+│  └──────────────────────────────────────────────┘                               │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+```python
+# api/wopi.py
+from fastapi import APIRouter, Request, Response
+
+router = APIRouter(prefix="/api/wopi")
+
+@router.get("/files/{file_id}")
+async def check_file_info(
+    file_id: UUID,
+    access_token: str,
+    request: Request
+):
+    """WOPI CheckFileInfo - Dateiinformationen"""
+    # Token validieren (kann normaler Token oder Public Link Token sein)
+    access = await validate_wopi_access(access_token, file_id)
+
+    document = await document_service.get(file_id)
+
+    return {
+        "BaseFileName": document.original_filename,
+        "Size": document.file_size,
+        "OwnerId": str(document.created_by),
+        "UserId": str(access.user_id or "public"),
+        "UserFriendlyName": access.user_name or "Endkunde",
+        "UserCanWrite": access.can_edit,
+        "UserCanNotWriteRelative": True,
+        "LastModifiedTime": document.updated_at.isoformat(),
+        "SHA256": document.file_hash,
+        "Version": str(document.version)
+    }
+
+@router.get("/files/{file_id}/contents")
+async def get_file(
+    file_id: UUID,
+    access_token: str
+):
+    """WOPI GetFile - Datei herunterladen"""
+    await validate_wopi_access(access_token, file_id)
+    content = await storage_service.get_file(file_id)
+    return Response(content=content, media_type="application/octet-stream")
+
+@router.post("/files/{file_id}/contents")
+async def put_file(
+    file_id: UUID,
+    access_token: str,
+    request: Request
+):
+    """WOPI PutFile - Datei speichern"""
+    access = await validate_wopi_access(access_token, file_id, require_write=True)
+
+    content = await request.body()
+    await storage_service.update_file(file_id, content)
+
+    # Benachrichtigung bei Änderung durch Endkunde
+    if access.is_public_link:
+        await notify_project_owner(file_id, "document_edited")
+
+    return Response(status_code=200)
+```
+
+### 12.4 Token-basierter Zugang
 
 ```python
 # services/customer_portal.py
@@ -1391,4 +1708,4 @@ class CustomerPortalService:
 ---
 
 *Letzte Aktualisierung: 2025-11-26*
-*Version: 2.0.0*
+*Version: 2.1.0*
